@@ -1,0 +1,35 @@
+.board {
+  display: grid;
+  grid-template-columns: repeat(20, 30px); /* 20 columns */
+  grid-template-rows: repeat(20, 30px);   /* 20 rows */
+  gap: 0; /* Removes extra space between cells */
+  margin: 20px auto;
+  border: 2px solid black; /* Keep the outer border */
+  width: fit-content;
+}
+
+.cell {
+  width: 30px;
+  height: 30px;
+  background-color: white;
+  border: 1px solid #ccc; /* Cell border */
+  box-sizing: border-box; /* Ensures border is included in size calculation */
+  text-align: center;
+}
+
+
+.cell {
+  width: 30px;
+  height: 30px;
+  background-color: white;
+  border: 1px solid #ccc;
+  text-align: center;
+}
+
+.cell.player-1 {
+  background-color: #ff6b6b; /* Red */
+}
+
+.cell.player-2 {
+  background-color: #4dabf7; /* Blue */
+}
