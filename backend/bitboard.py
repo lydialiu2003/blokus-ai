@@ -45,3 +45,45 @@ piece_dict = {
     "Y5" : 0b0100011000010000100000000,
     "L5" : 0b1000010000100001100000000
 }
+
+class Pieces:
+    def __init__(self, shape):
+        self.base = shape
+        self.variants = self.generate_variants()
+
+    def generate_variants(self):
+        variants = set()
+        current = self.base
+        for _ in range(4):
+            variants.add(current)
+            variants.add(self.flipped(current))
+            current = self.rotate(current)
+        return list(variants)
+    
+    def rotate(self, bitmask):
+        rotated = 0
+        for y in range(5):
+            for x in range(5):
+                if (bitmask >> (y * 5 + x)) & 1:
+                    rotated |= (1 << ((4 - x) * 5 + y))
+        return rotated
+    
+    def flipped(self, bitmask):
+        flipped = 0
+        for y in range(5):
+            for x in range(5):
+                if (bitmask >> (y * 5 + x)) & 1:
+                    flipped |= (1 << (y * 5 + (4 - x)))
+        return flipped
+    
+    def __str__(self):
+        result = []
+        for var in self.variants:
+            rows = []
+            for y in range(5):
+                row = ''.join('#' if (var >> (y * 5 + x)) & 1 else '.' for x in range(5))
+                rows.append(row)
+            result.append("\n".join(rows))
+        return "\n\n".join(result)
+
+

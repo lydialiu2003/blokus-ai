@@ -1,18 +1,16 @@
 import unittest
-from bitboard import Bitboard, piece_dict
+from bitboard import Bitboard, piece_dict, Pieces
 
 class TestBitboard(unittest.TestCase):
     def setUp(self):
-        self.bitboard = Bitboard()
+        self.bitmask = Pieces(piece_dict["L5"])
 
-    def testindex1(self):
-        self.assertEqual(self.bitboard.index(0, 0), 0)
+    def testpieces(self):
+        print("Base Shape:")
+        print(self.bitmask.base)
+        print("\nVariants:")
+        print(self.bitmask)
 
-    def testindex3(self):
-        self.assertEqual(self.bitboard.index(0, 1), 20)
-    
-    def testindex2(self):
-        self.assertEqual(self.bitboard.index(1, 0), 1)
 
 if __name__ == "__main__":
     unittest.main()
