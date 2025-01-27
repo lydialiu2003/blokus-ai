@@ -54,7 +54,7 @@ class Pieces:
     def generate_variants(self):
         variants = set()
         current = self.base
-        for _ in range(4):
+        for rotation in range(4):
             variants.add(current)
             variants.add(self.flipped(current))
             current = self.rotate(current)
@@ -87,3 +87,56 @@ class Pieces:
         return "\n\n".join(result)
 
 
+class BlokusGame:
+    def __init__(self):
+        """
+        Initialize the BlokusGame class with bitboards for each player.
+        """
+        self.players = {
+            1: Bitboard(),
+            2: Bitboard(),
+            3: Bitboard(),
+            4: Bitboard()
+        }
+        self.current_player = 1
+
+    def can_place(self, player_id, bitmask, x, y):
+        """
+        Check if a piece can be placed at the specified coordinates without overlapping existing pieces.
+        """
+        for dy in range(5):
+            for dx in range(5):
+                if (bitmask >> (dy * 5 + dx)) & 1:
+                    if self.players[player_id].get_bit(x + dx, y + dy):
+                        return False
+        return True
+    
+    def place_piece(self, player_id, piece_name, x, y):
+        """
+        Try to place a piece for the player at the specified coordinates.
+        Iterate through all variants and place the first valid one.
+        """
+        piece = Pieces(piece_dict[piece_name])
+        for variant in piece.variants:
+            if self.can_place(player_id, variant, x, y):
+                self.set_piece(player_id, variant, x, y)
+                return True
+        return False
+
+    def set_piece(self, player_id, bitmask, x, y):
+        """
+        Set the bits for a piece on the player's bitboard.
+        """
+        for dy in range(5):
+            for dx in range(5):
+                if (bitmask >> (dy * 5 + dx)) & 1:
+                    self.players[player_id].set_bit(x + dx, y + dy)
+    
+    def __str__(self):
+        """
+        Return a string representation of the bitboards for all players.
+        """
+        boards = []
+        for player_id, board in self.players.items():
+            boards.append(f"Player {player_id}:\n{board}")
+        return "\n\n".join(boards)
