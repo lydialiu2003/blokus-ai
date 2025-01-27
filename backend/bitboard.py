@@ -1,3 +1,27 @@
+class Bitboard:
+    def __init__(self):
+        self.board = 0
+    
+    def index(self, x: int, y: int) -> int:
+        return (y * 20) + x
+    
+    def set_bit(self, x: int, y: int):
+        self.board |= (1 << self.index(x, y))
+
+    def clear_bit(self, x: int, y:int):
+        self.board &= ~(1 <<self.index(x, y))
+    
+    def get_bit(self, x: int, y: int) -> bool:
+        return (self.board >> self.index(x, y)) & 1
+    
+    def __str__(self):
+        rows = []
+        for y in range(20):
+            row = ''.join('#' if self.get_bit(x, y) else "." for x in range(20))
+            rows.append(row)
+        return '\n'.join(rows)
+    
+
 piece_dict = {
     "I1" : 0b1000000000000000000000000,
     "I2" : 0b1000010000000000000000000,
