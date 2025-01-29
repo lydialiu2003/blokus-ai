@@ -44,13 +44,20 @@ class Board:
     def touching_corner(self, piece, x, y, player):
         # Check if the piece only touches the corners of other pieces
         piece_height, piece_width = piece.shape.shape
+        touching_corner = False
         for i in range(piece_height):
             for j in range(piece_width):
                 if piece.shape[i, j] == 1:  # If part of the piece is present at this cell
-                    # Check surrounding cells to ensure touching only corners
-                    neighbors = [(i-1, j), (i+1, j), (i, j-1), (i, j+1)]  # Adjacent cells
-                    for ni, nj in neighbors:
-                        if 0 <= ni < 20 and 0 <= nj < 20:  # Ensure within bounds
-                            if self.grid[x + ni, y + nj] != 0 and self.grid[x + ni, y + nj] != player.player_id:
+                    # Check adjacent cells to ensure no edge sharing
+                    adjacent_cells = [(i-1, j), (i+1, j), (i, j-1), (i, j+1)]
+                    for ni, nj in adjacent_cells:
+                        if 0 <= x + ni < 20 and 0 <= y + nj < 20:
+                            if self.grid[x + ni, y + nj] != 0:
                                 return False
-        return True
+                    # Check diagonal cells to ensure corner touching
+                    diagonal_cells = [(i-1, j-1), (i-1, j+1), (i+1, j-1), (i+1, j+1)]
+                    for ni, nj in diagonal_cells:
+                        if 0 <= x + ni < 20 and 0 <= y + nj < 20:
+                            if self.grid[x + ni, y + nj] == player.player_id:
+                                touching_corner = True
+        return touching_corner
