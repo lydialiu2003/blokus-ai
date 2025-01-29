@@ -11,5 +11,5 @@ class Piece:
     def flip(self):
         self.shape = np.fliplr(self.shape)
 
-    def __rpr__(self):
+    def __repr__(self):
         return str(self.shape)
