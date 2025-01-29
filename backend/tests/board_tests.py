@@ -29,22 +29,22 @@ class TestBoard(unittest.TestCase):
     def test_within_bounds(self):
         # Test within bounds
         piece = MockPiece([[1, 1], [1, 1]])
-        self.assertTrue(self.board.within_bounds(piece, 0, 0))
-        self.assertFalse(self.board.within_bounds(piece, 19, 19))
+        self.assertTrue(self.board.validator.within_bounds(piece, 0, 0))
+        self.assertFalse(self.board.validator.within_bounds(piece, 19, 19))
 
     def test_not_overlapping(self):
         # Test not overlapping
         piece = MockPiece([[1, 1], [1, 1]])
         self.board.grid[0, 0] = 1
-        self.assertFalse(self.board.not_overlapping(piece, 0, 0))
-        self.assertTrue(self.board.not_overlapping(piece, 1, 1))
+        self.assertFalse(self.board.validator.not_overlapping(piece, 0, 0))
+        self.assertTrue(self.board.validator.not_overlapping(piece, 1, 1))
 
     def test_touching_corner(self):
         # Test touching corner
         piece = MockPiece([[1, 1], [1, 1]])
         self.board.grid[1, 1] = 1
-        self.assertFalse(self.board.touching_corner(piece, 0, 0, self.player1))
-        self.assertTrue(self.board.touching_corner(piece, 2, 2, self.player1))
+        self.assertFalse(self.board.validator.touching_corner(piece, 0, 0, self.player1))
+        self.assertTrue(self.board.validator.touching_corner(piece, 2, 2, self.player1))
 
     def test_is_valid(self):
         # Test is valid
