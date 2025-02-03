@@ -1,10 +1,11 @@
-.board {
+/* Styling the board */
+#board {
   display: grid;
   grid-template-columns: repeat(20, 30px); /* 20 columns */
   grid-template-rows: repeat(20, 30px);   /* 20 rows */
-  gap: 0; /* Removes extra space between cells */
+  gap: 0;
   margin: 20px auto;
-  border: 2px solid black; /* Keep the outer border */
+  border: 2px solid black; /* Board border */
   width: fit-content;
 }
 
@@ -17,19 +18,30 @@
   text-align: center;
 }
 
-
-.cell {
-  width: 30px;
-  height: 30px;
-  background-color: white;
-  border: 1px solid #ccc;
-  text-align: center;
-}
-
+/* Player colors */
 .cell.player-1 {
   background-color: #ff6b6b; /* Red */
 }
 
 .cell.player-2 {
   background-color: #4dabf7; /* Blue */
+}
+
+.cell.player-3 {
+  background-color: #f7ec4d; /* Yellow */
+}
+
+.cell.player-4 {
+  background-color: #53f74d; /* Green */
+}
+
+/* Dropdown and buttons */
+.info {
+  text-align: center;
+}
+
+select, button {
+  margin: 10px;
+  padding: 5px;
+  font-size: 1rem;
 }
