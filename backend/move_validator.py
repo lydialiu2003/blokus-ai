@@ -19,6 +19,17 @@ class MoveValidator:
                         return False
         return True
     
+    def first_move(self, piece, x, y):
+        # Check if the piece is placed at one of the corner coordinates
+        piece_height, piece_width = piece.shape.shape
+        corner_coordinates = [(0, 0), (19, 0), (0, 19), (19, 19)]
+        for i in range(piece_height):
+            for j in range(piece_width):
+                if piece.shape[i, j] == 1:
+                    if (x + i, y + j) in corner_coordinates:
+                        return True
+        return False
+    
     def touching_corner(self, piece, x, y, player):
         # Check if the piece only touches the corners of other pieces
         piece_height, piece_width = piece.shape.shape

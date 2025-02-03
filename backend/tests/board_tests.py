@@ -46,22 +46,25 @@ class TestBoard(unittest.TestCase):
         self.assertFalse(self.board.validator.touching_corner(piece, 0, 0, self.player1))
         self.assertTrue(self.board.validator.touching_corner(piece, 2, 2, self.player1))
 
+    def test_first_move(self):
+        # Test touching corner
+        piece = MockPiece([[1, 1], [1, 1]])
+        self.assertFalse(self.board.validator.first_move(piece, 1, 1))
+        self.assertTrue(self.board.validator.first_move(piece, 0, 0))
+
     def test_is_valid(self):
         # Test is valid
         piece = MockPiece([[1, 1], [1, 1]])
-        self.board.grid[2, 2] = 1
         self.assertTrue(self.board.is_valid(piece, 0, 0, self.player1))
 
     def test_place_piece(self):
         # Test place piece
         piece = MockPiece([[1, 1], [1, 1]])
-        self.board.grid[2, 2] = 1
         self.assertTrue(self.board.place_piece(piece, 0, 0, self.player1))
 
     def test_display_board(self):
         # Test display board
         piece = MockPiece([[1, 1], [1, 1]])
-        self.board.grid[2, 2] = 1
         self.board.place_piece(piece, 0, 0, self.player1)
         self.board.display_board()
 
