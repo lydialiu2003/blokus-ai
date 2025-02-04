@@ -2,8 +2,9 @@ import numpy as np
 
 class Piece:
 
-    def __init__(self, shape):
+    def __init__(self, shape, name):
         self.shape = np.array(shape)
+        self.name = name
 
     def rotate(self):
         self.shape = np.rot90(self.shape)
@@ -12,29 +13,32 @@ class Piece:
         self.shape = np.fliplr(self.shape)
 
     def __repr__(self):
-        return str(self.shape)
+        return f"{self.name}: \n{self.shape}"
 
 # Define all 21 Blokus pieces
-pieces = [
-    Piece([[1]], "Single"),
-    Piece([[1, 1]], "Double"),
-    Piece([[1, 1, 1]], "Triple"),
-    Piece([[1, 1, 1, 1]], "Quadruple"),
-    Piece([[1, 1, 1, 1, 1]], "Quintuple"),
-    Piece([[1, 1], [1, 1]], "Square"),
-    Piece([[1, 1, 1], [0, 1, 0]], "T-Shape"),
-    Piece([[1, 1, 1], [1, 0, 0]], "L-Shape"),
-    Piece([[1, 1, 1], [0, 0, 1]], "Reverse L-Shape"),
-    Piece([[1, 1, 1], [0, 1, 1]], "Zigzag"),
-    Piece([[0, 1, 1], [1, 1, 0]], "Reverse Zigzag"),
-    Piece([[1, 1, 1, 1], [0, 1, 0, 0]], "Extended L"),
-    Piece([[1, 1, 1], [0, 1, 0], [0, 1, 0]], "T-Tall"),
-    Piece([[1, 1, 1], [1, 0, 1]], "Cross"),
-    Piece([[1, 0, 1], [1, 1, 1]], "U-Shape"),
-    Piece([[1, 1, 0], [0, 1, 1], [0, 1, 0]], "Diagonal T"),
-    Piece([[1, 1, 1, 0], [0, 0, 1, 1]], "Hook"),
-    Piece([[1, 1, 1], [0, 1, 1], [0, 0, 1]], "Snake"),
-    Piece([[1, 1, 1], [1, 1, 0]], "Big Z"),
-    Piece([[1, 1, 0], [0, 1, 0], [0, 1, 1]], "Screw"),
-    Piece([[1, 1], [1, 1], [0, 1]], "Pyramid")
+pieces_list = [
+    Piece([[1]], "I1"),
+    Piece([[1, 1]], "I2"),
+    Piece([[1, 1, 1]], "I3"),
+    Piece([[1, 1, 1, 1]], "I4"),
+    Piece([[1, 1, 1, 1, 1]], "I5"),
+    Piece([[1, 1], [1, 0]], "V3"),
+    Piece([[1, 1, 0], [0, 1, 1]], "Z4"),
+    Piece([[1, 1, 1], [0, 1, 0]], "T4"),
+    Piece([[1, 1, 1], [1, 0, 0]], "L4"),
+    Piece([[1, 1], [1, 1]], "O4"),
+    Piece([[0, 1, 1], [1, 1, 0], [0, 1, 0]], "F5"),
+    Piece([[1, 1, 1], [0, 1, 0], [0, 1, 0]], "T5"),
+    Piece([[1, 1], [1, 1], [1, 0]], "P5"),
+    Piece([[1, 0, 0], [1, 1, 0], [0, 1, 1]], "W5"),
+    Piece([[0, 1, 0], [1, 1, 1], [0, 1, 0]], "X5"),
+    Piece([[1, 1, 0], [0, 1, 0], [0, 1, 1]], "Z5"),
+    Piece([[1, 0, 0], [1, 0, 0], [1, 1, 1]], "V5"),
+    Piece([[1, 0, 1], [1, 1, 1]], "U5"),
+    Piece([[1, 1, 1, 0], [0, 0, 1, 1]], "N5"),
+    Piece([[1, 1, 1, 1], [0, 1, 0, 0]], "Y5"),
+    Piece([[1, 1, 1, 1], [1, 0, 0, 0]], "L5")
 ]
+
+# Create a dictionary to map piece names to Piece objects
+pieces = {piece.name: piece for piece in pieces_list}
