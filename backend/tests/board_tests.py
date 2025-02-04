@@ -65,7 +65,10 @@ class TestBoard(unittest.TestCase):
     def test_display_board(self):
         # Test display board
         piece = MockPiece([[1, 1], [1, 1]])
-        self.board.place_piece(piece, 0, 0, self.player1)
+        self.board.place_piece(piece, 0, 0, self.player2)
+        self.board.place_piece(piece, 18, 0, self.player2)
+        self.board.place_piece(piece, 16, 2, self.player2)
+        self.board.place_piece(piece, 14, 4, self.player2)
         self.board.display_board()
 
 if __name__ == "__main__":

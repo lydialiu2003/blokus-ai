@@ -17,7 +17,11 @@ class Board:
         # Check valid placement
         if self.is_valid(piece, x, y, player):
             # Place piece (mark player_id)
-            self.grid[x:x + piece.shape.shape[0], y:y + piece.shape.shape[1]] = player.player_id
+            piece_height, piece_width = piece.shape.shape
+            for i in range(piece_height):
+                for j in range(piece_width):
+                    if piece.shape[i, j] == 1:
+                        self.grid[x + i, y + j] = player.player_id
             return True
         else:
             return False

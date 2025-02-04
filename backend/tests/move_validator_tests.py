@@ -20,6 +20,7 @@ class TestMoveValidator(unittest.TestCase):
         self.grid = np.zeros((20, 20), dtype=int)
         self.validator = MoveValidator(self.grid)
         self.player1 = MockPlayer(1)
+        self.player2 = MockPlayer(2)
 
     def test_within_bounds(self):
         # Test within bounds
@@ -39,6 +40,7 @@ class TestMoveValidator(unittest.TestCase):
         piece = MockPiece([[1, 1], [1, 1]])
         self.grid[1, 1] = 1
         self.assertFalse(self.validator.touching_corner(piece, 0, 0, self.player1))  # Overlapping, should be False
-        self.assertFalse(self.validator.touching_corner(piece, 0, 2, self.player1))   # Touching corner, should be True
-        self.assertFalse(self.validator.touching_corner(piece, 2, 0, self.player1))   # Touching corner, should be True
-        self.assertTrue(self.validator.touching_corner(piece, 2, 2, self.player1))  # Not touching, should be False
+        self.assertFalse(self.validator.touching_corner(piece, 0, 2, self.player1))   # Touching edge, should be false
+        self.assertFalse(self.validator.touching_corner(piece, 2, 0, self.player1))   # Touching edge, should be false
+        self.assertTrue(self.validator.touching_corner(piece, 2, 2, self.player1))  # Not touching, should be True
+        self.assertFalse(self.validator.touching_corner(piece, 2, 2, self.player2))  # Wrong player, should be False
