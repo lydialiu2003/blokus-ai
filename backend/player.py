@@ -21,6 +21,19 @@ class Player:
             return None
         
         piece = self.pieces[piece_index]
+
+        # Ask if the player wants to rotate or flip the piece
+        while True:
+            transform = input("Enter transformations (r for rotate, f for flip, done to finish): ").strip().lower()
+            if transform == 'r':
+                piece.rotate()
+            elif transform == 'f':
+                piece.flip()
+            elif transform == 'done':
+                break
+            else:
+                print("Invalid input. Enter 'r' to rotate, 'f' to flip, or 'done' to finish.")
+
         x = int(input("Enter row coordinate: "))
         y = int(input("Enter column coordinate: "))
     
