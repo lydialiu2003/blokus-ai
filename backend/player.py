@@ -1,4 +1,5 @@
 from backend.piece import Piece
+from copy import deepcopy
 
 class Player:
     def __init__(self, player_id, pieces):
@@ -20,7 +21,8 @@ class Player:
             print("Invalid selection")
             return None
         
-        piece = self.pieces[piece_index]
+        original_piece = self.pieces[piece_index]
+        piece = deepcopy(original_piece)
 
         # Ask if the player wants to rotate or flip the piece
         while True:
@@ -38,7 +40,7 @@ class Player:
         y = int(input("Enter column coordinate: "))
     
         if board.is_valid(piece, x, y, self):
-            return piece, x, y
+            return original_piece, piece, x, y
         else:
             print("Invalid move. Try again.")
             return None
