@@ -1,4 +1,5 @@
 import numpy as np
+from copy import deepcopy
 
 class Piece:
 
@@ -11,6 +12,17 @@ class Piece:
 
     def flip(self):
         self.shape = np.fliplr(self.shape)
+
+    def all_orientations(self):
+        orientations = []
+        piece_copy = deepcopy(self)
+        for _ in range(4):
+            piece_copy.rotate()
+            orientations.append(piece_copy.shape.copy())
+            piece_copy.flip()
+            orientations.append(piece_copy.shape.copy())
+            piece_copy.flip()
+        return orientations
 
     def __repr__(self):
         return f"{self.name}: \n{self.shape}"

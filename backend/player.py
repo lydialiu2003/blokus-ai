@@ -44,3 +44,9 @@ class Player:
         else:
             print("Invalid move. Try again.")
             return None
+        
+    def get_all_orientations(self):
+        all_orientations = {}
+        for piece in self.pieces:
+            all_orientations[piece.name] = piece.all_orientations()
+        return all_orientations
