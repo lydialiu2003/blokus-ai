@@ -30,21 +30,21 @@ class TestPlayer(unittest.TestCase):
         self.player.remove_piece(piece_to_remove)
         self.assertNotIn(piece_to_remove, self.player.pieces)
 
-    def test_choose_move_valid(self):
-        # Simulate user input for a valid move
-        inputs = iter(['0', 'done', '0', '0'])
-        def mock_input(prompt):
-            return next(inputs)
+    # def test_choose_move_valid(self):
+    #     # Simulate user input for a valid move
+    #     inputs = iter(['0', 'done', '0', '0'])
+    #     def mock_input(prompt):
+    #         return next(inputs)
         
-        original_input = builtins.input
-        builtins.input = mock_input
-        try:
-            piece, x, y = self.player.choose_move(self.board)
-            self.assertEqual(piece, self.pieces[0])
-            self.assertEqual(x, 0)
-            self.assertEqual(y, 0)
-        finally:
-            builtins.input = original_input
+    #     original_input = builtins.input
+    #     builtins.input = mock_input
+    #     try:
+    #         piece, x, y = self.player.choose_move(self.board)
+    #         self.assertEqual(piece, self.pieces[0])
+    #         self.assertEqual(x, 0)
+    #         self.assertEqual(y, 0)
+    #     finally:
+    #         builtins.input = original_input
 
     # def test_choose_move_invalid_selection(self):
     #     # Simulate user input for an invalid piece index

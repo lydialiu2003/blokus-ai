@@ -1,6 +1,7 @@
 import unittest
 import numpy as np
 from backend.move_validator import MoveValidator
+from backend.piece import Piece
 
 """
 TEST COMMAND
@@ -24,20 +25,20 @@ class TestMoveValidator(unittest.TestCase):
 
     def test_within_bounds(self):
         # Test within bounds
-        piece = MockPiece([[1, 1], [1, 1]])
+        piece = Piece([[1, 1], [1, 1]], "O4")
         self.assertTrue(self.validator.within_bounds(piece, 0, 0))
         self.assertFalse(self.validator.within_bounds(piece, 19, 19))
 
     def test_not_overlapping(self):
         # Test not overlapping
-        piece = MockPiece([[1, 1], [1, 1]])
+        piece = Piece([[1, 1], [1, 1]], "O4")
         self.grid[0, 0] = 1
         self.assertFalse(self.validator.not_overlapping(piece, 0, 0))
         self.assertTrue(self.validator.not_overlapping(piece, 1, 1))
 
     def test_touching_corner(self):
         # Test touching corner
-        piece = MockPiece([[1, 1], [1, 1]])
+        piece = Piece([[1, 1], [1, 1]], "O4")
         self.grid[1, 1] = 1
         self.assertFalse(self.validator.touching_corner(piece, 0, 0, self.player1))  # Overlapping, should be False
         self.assertFalse(self.validator.touching_corner(piece, 0, 2, self.player1))   # Touching edge, should be false

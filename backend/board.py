@@ -4,8 +4,9 @@ from backend.move_validator import MoveValidator
 
 class Board:
 
-    def __init__(self):
-        self.grid = np.zeros((20, 20), dtype=int)
+    def __init__(self, size=20):
+        self.size = size
+        self.grid = np.zeros((size, size), dtype=int)
         self.validator = MoveValidator(self.grid)
 
     def display_board(self):

@@ -18,10 +18,12 @@ class Piece:
         piece_copy = deepcopy(self)
         for _ in range(4):
             piece_copy.rotate()
-            orientations.append(piece_copy.shape.copy())
+            if not any(np.array_equal(piece_copy.shape, orientation) for orientation in orientations):
+                orientations.append(piece_copy.shape.copy())
             piece_copy.flip()
-            orientations.append(piece_copy.shape.copy())
-            piece_copy.flip()
+            if not any(np.array_equal(piece_copy.shape, orientation) for orientation in orientations):
+                orientations.append(piece_copy.shape.copy())
+            piece_copy.flip()  # Flip back to original orientation before next rotation
         return orientations
 
     def __repr__(self):
