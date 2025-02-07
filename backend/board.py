@@ -9,9 +9,16 @@ class Board:
         self.current_player = 1  # Start with Player 1
         self.players = players
 
+<<<<<<< HEAD
     def is_first_move(self, player_id):
         """Check if the player has made their first move."""
         return not self.players[player_id].has_made_first_move
+=======
+    def __init__(self, size=20):
+        self.size = size
+        self.grid = np.zeros((size, size), dtype=int)
+        self.validator = MoveValidator(self.grid)
+>>>>>>> 2976d133720d239feac6f03fd024d3f8a85be35e
 
     def place_piece(self, piece, x, y, player_id):
         """Attempt to place a piece on the board."""

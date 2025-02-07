@@ -1,4 +1,9 @@
+<<<<<<< HEAD
 from piece import Piece
+=======
+from backend.piece import Piece
+from copy import deepcopy
+>>>>>>> 2976d133720d239feac6f03fd024d3f8a85be35e
 
 class Player:
     def __init__(self, player_id, pieces):
@@ -83,7 +88,8 @@ class Player:
             print("Invalid selection")
             return None
         
-        piece = self.pieces[piece_index]
+        original_piece = self.pieces[piece_index]
+        piece = deepcopy(original_piece)
 
         # Ask if the player wants to rotate or flip the piece
         while True:
@@ -101,8 +107,28 @@ class Player:
         y = int(input("Enter column coordinate: "))
     
         if board.is_valid(piece, x, y, self):
-            return piece, x, y
+            return original_piece, piece, x, y
         else:
             print("Invalid move. Try again.")
             return None
+<<<<<<< HEAD
             """
+=======
+        
+    def get_all_orientations(self):
+        all_orientations = {}
+        for piece in self.pieces:
+            all_orientations[piece.name] = piece.all_orientations()
+        return all_orientations
+
+    def find_all_valid_moves(self, board):
+        valid_moves = []
+        for piece in self.pieces:
+            for orientation in piece.all_orientations():
+                orientation_piece = Piece(orientation, piece.name)  # Create a Piece object for each orientation
+                for x in range(board.size):
+                    for y in range(board.size):
+                        if board.is_valid(orientation_piece, x, y, self):
+                            valid_moves.append((piece, orientation_piece, x, y))
+        return valid_moves
+>>>>>>> 2976d133720d239feac6f03fd024d3f8a85be35e

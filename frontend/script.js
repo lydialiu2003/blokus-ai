@@ -1,112 +1,184 @@
-const board = document.getElementById("board");
-const currentTurnDisplay = document.getElementById("current-turn");
-const pieceSelector = document.getElementById("piece-selector");
+const board = document.getElementById('board');
+const pieceContainer = document.getElementById('piece-container');
+const currentTurnDisplay = document.getElementById('current-turn');
 let currentPlayer = 1; // Start with Player 1
+let hoveredPiece = null; // Track the currently hovered piece
+let hoveredCellInPiece = { row: 0, col: 0 }; // Track the hovered cell within the piece
 
-// Backend API endpoints
-const API_GET_BOARD = "http://127.0.0.1:5000/get_board";
-const API_PLACE_PIECE = "http://127.0.0.1:5000/place_piece";
-
-// Initialize a 20x20 grid
+/**
+ * Initialize the board as a 20x20 grid.
+ */
 const initializeBoard = () => {
-  console.log("Initializing board...");
-  board.innerHTML = ""; // Clear board if reinitializing
-  for (let i = 0; i < 20; i++) {
-    for (let j = 0; j < 20; j++) {
-      const cell = document.createElement("div");
-      cell.classList.add("cell");
-      cell.dataset.row = i;
-      cell.dataset.col = j;
+    board.innerHTML = ''; // Clear the board
+    for (let i = 0; i < 20; i++) {
+        for (let j = 0; j < 20; j++) {
+            const cell = document.createElement('div');
+            cell.classList.add('cell');
+            cell.dataset.row = i;
+            cell.dataset.col = j;
 
-      // Make each cell droppable
-      cell.addEventListener("dragover", (e) => e.preventDefault());
-      cell.addEventListener("drop", (e) => handleDrop(e, cell));
+            // Enable drag-and-drop functionality
+            cell.addEventListener('dragover', (e) => e.preventDefault());
+            cell.addEventListener('drop', (e) => handleDrop(e, cell));
 
-      board.appendChild(cell);
+            board.appendChild(cell);
+        }
     }
-  }
-  console.log("Board initialized.");
 };
 
-// Fetch the board state from the backend
-const fetchBoard = async () => {
-  try {
-    const response = await fetch(API_GET_BOARD);
-    const data = await response.json();
-    renderBoard(data.board);
-    updateCurrentTurn(data.current_player); // Map backend player to frontend player
-  } catch (error) {
-    console.error("Error fetching board state:", error);
-  }
-};
+/**
+ * Fetch and render the pieces for the current player.
+ */
+const renderPieces = async () => {
+    pieceContainer.innerHTML = ''; // Clear previous pieces
+    try {
+        const response = await fetch('http://127.0.0.1:5000/get_pieces');
+        const { pieces } = await response.json();
+        console.log("🧩 Pieces fetched:", pieces);
 
-// Render the board state on the grid
-const renderBoard = (boardState) => {
-  const cells = document.querySelectorAll(".cell");
-  cells.forEach((cell) => {
-    const row = parseInt(cell.dataset.row);
-    const col = parseInt(cell.dataset.col);
-    const player = boardState[row][col];
-    cell.className = "cell"; // Reset cell
-    if (player === "A") cell.classList.add("player-1");
-    else if (player === "B") cell.classList.add("player-2");
-    else if (player === "C") cell.classList.add("player-3");
-    else if (player === "D") cell.classList.add("player-4");
-  });
-};
+        pieces.forEach((piece) => {
+            const pieceDiv = createPieceDiv(piece);
+            pieceContainer.appendChild(pieceDiv);
+        });
 
-// Handle drop event for placing a piece
-const handleDrop = async (e, cell) => {
-  const pieceType = e.dataTransfer.getData("pieceType");
-  const row = parseInt(cell.dataset.row);
-  const col = parseInt(cell.dataset.col);
-
-  console.log(`Dropped piece: ${pieceType} at Row: ${row}, Col: ${col}`);
-
-  // Send placement to backend
-  try {
-    const response = await fetch(API_PLACE_PIECE, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ piece: pieceType, x: row, y: col }),
-    });
-    const data = await response.json();
-
-    if (data.success) {
-      renderBoard(data.board); // Update board
-      endTurn(); // Switch players
-    } else {
-      alert(data.error || "Invalid move!");
+        if (pieces.length === 0) {
+            console.warn("⚠️ No pieces available for the current player.");
+        }
+    } catch (error) {
+        console.error("❌ Error fetching pieces:", error);
+        alert("Failed to fetch pieces. Please check the backend.");
     }
-  } catch (error) {
-    console.error("Error during piece placement:", error);
-  }
 };
 
-// End the turn and switch players
-const endTurn = () => {
-  currentPlayer = currentPlayer === 4 ? 1 : currentPlayer + 1; // Cycle between 1-4
-  updateCurrentTurn(currentPlayer);
-};
+/**
+ * Create a DOM element for a game piece.
+ */
+const createPieceDiv = (piece) => {
+    const pieceDiv = document.createElement('div');
+    pieceDiv.classList.add('piece');
+    pieceDiv.dataset.piece = piece.name;
+    pieceDiv.dataset.shape = JSON.stringify(piece.shape);
 
-const updateCurrentTurn = (player) => {
-  currentPlayer = player; // Update player state
-  currentTurnDisplay.textContent = `Current Turn: Player ${currentPlayer}`;
-};
+    piece.shape.forEach((row, rowIndex) => {
+        const rowDiv = document.createElement('div');
+        rowDiv.classList.add('row');
 
-// Add event listeners to draggable pieces
-const initializePieces = () => {
-  const pieces = document.querySelectorAll(".piece");
-  pieces.forEach((piece) => {
-    piece.setAttribute("draggable", true);
-    piece.addEventListener("dragstart", (e) => {
-      e.dataTransfer.setData("pieceType", piece.dataset.piece);
-      console.log(`Dragging piece: ${piece.dataset.piece}`);
+        row.forEach((cell, colIndex) => {
+            const cellDiv = document.createElement('div');
+            cellDiv.classList.add('cell');
+            if (cell === 1) {
+                cellDiv.classList.add('filled');
+                cellDiv.style.backgroundImage = `url(http://127.0.0.1:5000/static/player_${currentPlayer}.png)`;
+                cellDiv.style.backgroundSize = 'cover';
+
+                cellDiv.addEventListener('mouseover', () => {
+                    hoveredCellInPiece = { row: rowIndex, col: colIndex };
+                });
+            }
+            rowDiv.appendChild(cellDiv);
+        });
+
+        pieceDiv.appendChild(rowDiv);
     });
-  });
+
+    pieceDiv.draggable = true;
+    pieceDiv.addEventListener('dragstart', (e) => {
+        e.dataTransfer.setData('piece', JSON.stringify({
+            name: piece.name,
+            shape: piece.shape,
+        }));
+        hoveredPiece = piece;
+        console.log(`🧩 Dragging piece: ${piece.name}`);
+    });
+
+    return pieceDiv;
 };
 
-// Initialize everything on page load
-initializeBoard();
-initializePieces();
-fetchBoard();
+/**
+ * Handle the drop event and calculate the position.
+ */
+const handleDrop = (e, cell) => {
+    const piece = JSON.parse(e.dataTransfer.getData('piece'));
+    const hoveredGridRow = parseInt(cell.dataset.row);
+    const hoveredGridCol = parseInt(cell.dataset.col);
+
+    const startX = hoveredGridRow - hoveredCellInPiece.row;
+    const startY = hoveredGridCol - hoveredCellInPiece.col;
+
+    console.log("📌 [handleDrop] --- DEBUG INFO ---");
+    console.log(`🎯 Dropped Piece: ${piece.name}`);
+    console.log(`🟢 Hovered Grid Cell -> Row: ${hoveredGridRow}, Col: ${hoveredGridCol}`);
+    console.log(`📍 Calculated Start Position -> X: ${startX}, Y: ${startY}`);
+
+    const isFirstMove = currentPlayer === 1; // Replace with actual game logic
+    updateBoard(piece.name, piece.shape, startX, startY, isFirstMove);
+};
+
+/**
+ * Send the placement request to the backend and update the board.
+ */
+const updateBoard = async (pieceName, pieceShape, startX, startY, isFirstMove) => {
+    try {
+        const response = await fetch('http://127.0.0.1:5000/place_piece', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                piece: pieceName,
+                shape: pieceShape,
+                x: startX,
+                y: startY,
+                isFirstMove,
+            }),
+        });
+
+        const result = await response.json();
+        console.log("📌 [updateBoard] Backend Response:", result);
+
+        if (result.success) {
+            renderBoard(result.board);
+
+            if (result.next_player) {
+                currentPlayer = result.next_player;
+                currentTurnDisplay.textContent = `Current Turn: Player ${currentPlayer}`;
+                renderPieces();
+            } else {
+                currentTurnDisplay.textContent = "Game Over!";
+                alert("Game Over! No valid moves left.");
+            }
+        } else {
+            console.error(`❌ Placement Error: ${result.error}`);
+            alert(`Invalid move: ${result.error}`);
+        }
+    } catch (error) {
+        console.error("❌ Error placing piece:", error);
+        alert("Error communicating with the server.");
+    }
+};
+
+/**
+ * Render the game board with updated grid.
+ */
+const renderBoard = (grid) => {
+    for (let i = 0; i < grid.length; i++) {
+        for (let j = 0; j < grid[i].length; j++) {
+            const cell = document.querySelector(`.cell[data-row="${i}"][data-col="${j}"]`);
+            if (grid[i][j] !== 0) {
+                cell.style.backgroundImage = `url(http://127.0.0.1:5000/static/player_${grid[i][j]}.png)`;
+                cell.style.backgroundSize = 'cover';
+            } else {
+                cell.style.backgroundImage = ''; // Clear cell if empty
+            }
+        }
+    }
+};
+
+/**
+ * Initialize the game.
+ */
+document.addEventListener('DOMContentLoaded', () => {
+    initializeBoard();
+    renderPieces();
+    currentTurnDisplay.textContent = `Current Turn: Player ${currentPlayer}`;
+});

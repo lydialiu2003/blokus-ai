@@ -3,43 +3,28 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Blokus Game</title>
+  <title>Blokus AI</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <div class="info">
     <h1>Blokus AI</h1>
     <h2 id="current-turn">Current Turn: Player 1</h2>
-    <button id="end-turn">End Turn</button>
+
+    <h3 id="current-turn">Hover over a piece and press R for rotate and F for flip</h2>
+    <button id="end-turn"> End Turn </button>
   </div>
 
-  <div id="piece-container" class="piece-container">
-    <!-- Add all 21 Blokus pieces -->
-    <div class="piece" draggable="true" data-piece="Single">Single</div>
-    <div class="piece" draggable="true" data-piece="Double">Double</div>
-    <div class="piece" draggable="true" data-piece="Triple">Triple</div>
-    <div class="piece" draggable="true" data-piece="Quadruple">Quadruple</div>
-    <div class="piece" draggable="true" data-piece="Quintuple">Quintuple</div>
-    <div class="piece" draggable="true" data-piece="Square">Square</div>
-    <div class="piece" draggable="true" data-piece="T-Shape">T-Shape</div>
-    <div class="piece" draggable="true" data-piece="L-Shape">L-Shape</div>
-    <div class="piece" draggable="true" data-piece="Reverse-L-Shape">Reverse L-Shape</div>
-    <div class="piece" draggable="true" data-piece="Zigzag">Zigzag</div>
-    <div class="piece" draggable="true" data-piece="Reverse-Zigzag">Reverse Zigzag</div>
-    <div class="piece" draggable="true" data-piece="Extended-L">Extended L</div>
-    <div class="piece" draggable="true" data-piece="T-Tall">T-Tall</div>
-    <div class="piece" draggable="true" data-piece="Cross">Cross</div>
-    <div class="piece" draggable="true" data-piece="U-Shape">U-Shape</div>
-    <div class="piece" draggable="true" data-piece="Diagonal-T">Diagonal T</div>
-    <div class="piece" draggable="true" data-piece="Hook">Hook</div>
-    <div class="piece" draggable="true" data-piece="Snake">Snake</div>
-    <div class="piece" draggable="true" data-piece="Big-Z">Big Z</div>
-    <div class="piece" draggable="true" data-piece="Screw">Screw</div>
-    <div class="piece" draggable="true" data-piece="Pyramid">Pyramid</div>
+  <!-- Main game area -->
+  <div class="game-container">
+    <!-- Board area -->
+    <div id="board" class="board"></div>
   </div>
 
-  <div id="board" class="board"></div>
+  <!-- Pieces area at the bottom -->
+  <div id="piece-container" class="piece-container"></div>
 
-  <script src="script.js"></script>
+
+  <script type="module" src="script.js"></script>
 </body>
 </html>

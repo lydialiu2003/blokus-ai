@@ -1,47 +1,99 @@
-/* Styling the board */
-#board {
-  display: grid;
-  grid-template-columns: repeat(20, 30px); /* 20 columns */
-  grid-template-rows: repeat(20, 30px);   /* 20 rows */
-  gap: 0;
-  margin: 20px auto;
-  border: 2px solid black; /* Board border */
-  width: fit-content;
+/* Global reset */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
-.cell {
-  width: 30px;
-  height: 30px;
-  background-color: white;
-  border: 1px solid #ccc; /* Cell border */
-  box-sizing: border-box; /* Ensures border is included in size calculation */
+/* Body styling */
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  background-color: #f4f4f9;
+}
+
+/* Info section styling */
+.info {
   text-align: center;
+  margin: 20px 0;
+}
+
+/* Game container styling */
+.game-container {
+  display: flex;
+  justify-content: center;
+  margin-bottom: -35px; /* Reduce the gap between board and pieces */
+  transform: scale(1); /* Scale down the game board */
+  transform-origin: top center;
+}
+
+/* Board styling */
+.board {
+  display: grid;
+  grid-template-columns: repeat(20, 32px); /* Ensure 20x20 grid with 32px per cell */
+  grid-template-rows: repeat(20, 32px);
+  gap: 2px;
+  background-color: #ddd;
+  padding: 10px;
+  border: 2px solid #ccc;
+}
+
+/* Board grid cell styling */
+.board .cell {
+  width: 32px;
+  height: 32px;
+  border: 1px solid #ccc; /* Keeps board grid visible */
+  background-color: white; /* Ensures board cells remain white */
 }
 
 /* Player colors */
-.cell.player-1 {
-  background-color: #ff6b6b; /* Red */
+.board .cell.player-1 { background-color: red; }
+.board .cell.player-2 { background-color: blue; }
+.board .cell.player-3 { background-color: green; }
+.board .cell.player-4 { background-color: yellow; }
+
+/* Piece container styling */
+.piece-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  padding: 10px;
+  background-color: transparent;
+  border-top: 2px solid #ccc;
+  margin-top: 45px; /* Reduce gap with board */
+  transform: scale(1); /* Scale down the pieces */
+  transform-origin: top center;
 }
 
-.cell.player-2 {
-  background-color: #4dabf7; /* Blue */
-}
-
-.cell.player-3 {
-  background-color: #f7ec4d; /* Yellow */
-}
-
-.cell.player-4 {
-  background-color: #53f74d; /* Green */
-}
-
-/* Dropdown and buttons */
-.info {
-  text-align: center;
-}
-
-select, button {
-  margin: 10px;
+/* Piece styling */
+.piece {
+  display: flex;
+  flex-direction: column;
+  margin: 5px;
   padding: 5px;
-  font-size: 1rem;
+  background-color: transparent;
+  cursor: grab;
+}
+
+/* Piece rows */
+.row {
+  display: flex;
+}
+
+/* Individual cells inside pieces */
+.piece .cell {
+  width: 32px;
+  height: 32px;
+  border: none; /* Remove borders for pieces */
+  background-color: transparent; /* Ensures pieces are transparent */
+}
+
+/* Ensuring filled piece cells still show images */
+.piece .cell.filled {
+  background-size: cover;
+  background-repeat: no-repeat;
 }

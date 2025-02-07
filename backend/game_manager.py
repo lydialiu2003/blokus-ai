@@ -36,9 +36,9 @@ class GameManager:
             self.next_turn()
             return
 
-        piece, x, y = move
+        original_piece, piece, x, y = move
         if self.board.place_piece(piece, x, y, current_player):
-            current_player.remove_piece(piece)
+            current_player.remove_piece(original_piece)
             self.board.display_board()
             self.next_turn()
         else:
@@ -61,25 +61,3 @@ class GameManager:
     def play_game(self):
         while not self.game_over:
             self.play_turn()
-    
-    # def check_winner(self):
-    #     if not self.game_over:
-    #         print("The game is not over yet!")
-    #         return None
-        
-    #     # Initialize player scores (for players 1, 2, 3, ...)
-    #     player_scores = {player.player_id: 0 for player in self.players}
-
-    #     # Iterate through the entire board and count tiles for each player
-    #     for row in self.board.grid:
-    #         for cell in row:
-    #             if cell != 0:  # Only count if the tile is occupied by a player
-    #                 player_scores[cell] += 1
-        
-    #     # Determine the player with the highest score
-    #     winner_id = max(player_scores, key=player_scores.get)
-    #     winner = next(player for player in self.players if player.player_id == winner_id)
-        
-    #     # Announce the winner
-    #     print(f"Player {winner.player_id} is the winner with {player_scores[winner_id]} tiles on the board!")
-    #     return winner
