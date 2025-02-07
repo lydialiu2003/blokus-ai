@@ -5,6 +5,7 @@ from board import Board
 from piece import pieces
 from extract_images import extract_images
 from player import Player
+from move_validator import MoveValidator
 
 # Initialize Flask app
 app = Flask(__name__)
@@ -42,6 +43,7 @@ def get_pieces():
     ]
     print(f"🧩 [get_pieces] Pieces for Player {board.current_player}: {pieces_data}")
     return jsonify({"pieces": pieces_data})
+    
 @app.route('/place_piece', methods=['POST'])
 def place_piece():
     data = request.json
@@ -71,6 +73,7 @@ def place_piece():
     
     print(f"🔄 Switching to Player {next_player}")
     return jsonify({'success': True, 'board': board.to_list(), 'next_player': next_player})
+
 
 if __name__ == "__main__":
     app.run(debug=True, host="127.0.0.1", port=5000)

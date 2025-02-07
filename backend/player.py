@@ -30,6 +30,21 @@ class Player:
                 return piece
         return None
     
+    def get_next_player(self):
+        """
+        Cycle to the next player with valid moves. If none, the game ends.
+        """
+        print(f"🔄 [get_next_player] Current Player: {self.current_player}")
+        for _ in range(len(self.players)):
+            self.current_player = (self.current_player % len(self.players)) + 1
+            print(f"🟢 Testing Player {self.current_player} for valid moves...")
+            if self.players[self.current_player].has_available_moves(self):
+                print(f"✅ Player {self.current_player} has valid moves.")
+                return self.current_player
+        print("❌ Game Over: No players have valid moves.")
+        return None
+
+    
     def has_available_moves(self, board):
         """
         Check if the player has any valid moves left.
@@ -44,6 +59,7 @@ class Player:
                         return True
         print(f"❌ No valid moves left for Player {self.player_id}")
         return False
+
 
 
 """
