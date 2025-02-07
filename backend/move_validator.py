@@ -12,7 +12,6 @@ class MoveValidator:
         return False
 
     def within_bounds(self, piece, x, y):
-<<<<<<< HEAD
         piece_height, piece_width = piece.shape
         return (
             0 <= x < self.grid.shape[0] and
@@ -20,11 +19,6 @@ class MoveValidator:
             x + piece_height <= self.grid.shape[0] and
             y + piece_width <= self.grid.shape[1]
         )
-=======
-        # Check bounds
-        piece_height, piece_width = piece.shape.shape
-        return 0 <= x <= self.grid.shape[0] - piece_height and 0 <= y <= self.grid.shape[1] - piece_width
->>>>>>> 2976d133720d239feac6f03fd024d3f8a85be35e
 
     def not_overlapping(self, piece, x, y):
         piece_height, piece_width = piece.shape
