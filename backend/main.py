@@ -48,31 +48,39 @@ def get_pieces():
 def place_piece():
     data = request.json
     piece_name = data['piece']
-    piece_shape = np.array(data['shape'])
+    piece_shape = np.array(data['shape'])  # Shape sent by frontend
     x, y = data['x'], data['y']
     current_player = board.current_player
     is_first_move = players[current_player].has_made_first_move is False
 
-    print(f"📌 [place_piece] --- DEBUG INFO ---")
-    print(f"🎯 Current Player: {current_player}")
-    print(f"🎯 Received piece: {piece_name}")
-    print(f"🟢 Placement Position -> X: {x}, Y: {y}")
+    print(f"🌀 Shape received from frontend:\n{piece_shape}")
 
     if not board.validator.is_valid(piece_shape, x, y, current_player, is_first_move):
         print("❌ Invalid Move: Did not pass validation.")
         return jsonify({'success': False, 'error': 'Invalid move.'}), 400
 
     board.place_piece(piece_shape, x, y, current_player)
+    print(f"✅ Piece placed on backend board at ({x}, {y}).")
     players[current_player].remove_piece(piece_name)
-    print(f"✅ Piece {piece_name} placed successfully.")
 
     next_player = board.get_next_player()
-    if next_player is None:
-        print("❌ Game Over: No valid moves for any player.")
-        return jsonify({'success': True, 'board': board.to_list(), 'next_player': None})
-    
-    print(f"🔄 Switching to Player {next_player}")
     return jsonify({'success': True, 'board': board.to_list(), 'next_player': next_player})
+
+@app.route("/get_game_state")
+def get_game_state():
+    return jsonify({
+        "is_first_move": board.check_if_first_move()
+    })
+
+@app.after_request
+def set_csp_headers(response):
+    response.headers['Content-Security-Policy'] = (
+        "default-src 'self'; "
+        "script-src 'self'; "
+        "style-src 'self' 'unsafe-inline'; "
+        "img-src 'self' data:;"
+    )
+    return response
 
 
 if __name__ == "__main__":

@@ -1,68 +1,6 @@
-from piece import Piece
+from backend.piece import Piece
+from copy import deepcopy
 
-class Player:
-    def __init__(self, player_id, pieces):
-        self.player_id = player_id
-        self.pieces = pieces  # List of Piece objects
-        self.has_made_first_move = False
-
-    def remove_piece(self, piece_name):
-        """
-        Remove a piece from the player's available pieces by its name.
-        """
-        found = False
-        for piece in self.pieces:
-            if piece.name == piece_name:
-                self.pieces.remove(piece)
-                found = True
-                print(f"[remove_piece] Removed piece: {piece_name} from player {self.player_id}")
-                break  # Stop after removing one piece
-        
-        if not found:
-            print(f"[remove_piece] ERROR: Piece {piece_name} not found for player {self.player_id}")
-
-    def get_piece(self, piece_name):
-        """
-        Retrieve a piece object by its name.
-        """
-        for piece in self.pieces:
-            if piece.name == piece_name:
-                return piece
-        return None
-    
-    def get_next_player(self):
-        """
-        Cycle to the next player with valid moves. If none, the game ends.
-        """
-        print(f"🔄 [get_next_player] Current Player: {self.current_player}")
-        for _ in range(len(self.players)):
-            self.current_player = (self.current_player % len(self.players)) + 1
-            print(f"🟢 Testing Player {self.current_player} for valid moves...")
-            if self.players[self.current_player].has_available_moves(self):
-                print(f"✅ Player {self.current_player} has valid moves.")
-                return self.current_player
-        print("❌ Game Over: No players have valid moves.")
-        return None
-
-    
-    def has_available_moves(self, board):
-        """
-        Check if the player has any valid moves left.
-        """
-        print(f"🔍 Checking available moves for Player {self.player_id}")
-        is_first_move = not self.has_made_first_move  # Determine if it's the first move
-        for piece in self.pieces:
-            for x in range(board.grid.shape[0]):
-                for y in range(board.grid.shape[1]):
-                    if board.validator.is_valid(piece.shape, x, y, self.player_id, is_first_move):
-                        print(f"✅ Valid move found for Player {self.player_id} with piece {piece.name} at ({x}, {y})")
-                        return True
-        print(f"❌ No valid moves left for Player {self.player_id}")
-        return False
-
-
-
-"""
 class Player:
     def __init__(self, player_id, pieces):
         self.player_id = player_id
@@ -106,4 +44,20 @@ class Player:
         else:
             print("Invalid move. Try again.")
             return None
-            """
+        
+    def get_all_orientations(self):
+        all_orientations = {}
+        for piece in self.pieces:
+            all_orientations[piece.name] = piece.all_orientations()
+        return all_orientations
+
+    def find_all_valid_moves(self, board):
+        valid_moves = []
+        for piece in self.pieces:
+            for orientation in piece.all_orientations():
+                orientation_piece = Piece(orientation, piece.name)  # Create a Piece object for each orientation
+                for x in range(board.size):
+                    for y in range(board.size):
+                        if board.is_valid(orientation_piece, x, y, self):
+                            valid_moves.append((piece, orientation_piece, x, y))
+        return valid_moves
