@@ -97,3 +97,9 @@ body {
   background-size: cover;
   background-repeat: no-repeat;
 }
+
+/* ✅ Styling for piece placement preview */
+.preview {
+  background-color: rgba(0, 255, 0, 0.5); /* Light green highlight */
+  border: 1px solid green;
+}

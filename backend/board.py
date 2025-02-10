@@ -30,5 +30,5 @@ class Board:
     def is_valid(self, piece, x, y, player):
         # Validate placement coordinates
         return self.validator.within_bounds(piece, x, y) and \
-               self.validator.not_overlapping(piece, x, y) and \
-               (self.validator.touching_corner(piece, x, y, player) or self.validator.first_move(piece, x, y))
+            self.validator.not_overlapping(piece, x, y) and \
+            (self.validator.touching_corner(piece, x, y, player) or self.validator.first_move(piece, x, y))
