@@ -15,15 +15,19 @@ class GameManager:
         self.current_turn = (self.current_turn + 1) % len(self.players)
 
     def check_game_over(self):
-        # Check if all players have no pieces left or cannot make a valid move
+        # Check if all players have no valid moves left
         for player in self.players:
-            if any(self.board.is_valid(piece, x, y, player) for piece in player.pieces for x in range(20) for y in range(20)):
+            valid_moves = player.find_all_valid_moves(self.board)
+            if valid_moves:
                 return False
         return True
 
     def play_turn(self):
         current_player = self.players[self.current_turn]
         print(f"Player {current_player.player_id}'s turn")
+
+        valid_moves = current_player.find_all_valid_moves(self.board)
+        print(f"Player {current_player.player_id} has {len(valid_moves)} valid moves available.")
 
         move = None
         attempts = 0
@@ -47,16 +51,6 @@ class GameManager:
         if self.check_game_over():
             self.game_over = True
             print("Game over!")
-
-    def check_end_game(self):
-        for player in self.players:
-            move = player.choose_move(self.board)
-            if move is not None:
-                return False
-        
-        self.game_over = True
-        print("The game is over!")
-        return True
     
     def play_game(self):
         while not self.game_over:

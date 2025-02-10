@@ -32,3 +32,12 @@ class Board:
         return self.validator.within_bounds(piece, x, y) and \
                self.validator.not_overlapping(piece, x, y) and \
                (self.validator.touching_corner(piece, x, y, player) or self.validator.first_move(piece, x, y))
+    
+    def get_score(self):
+        # Calculate the score for each player based on the number of tiles they have occupied
+        scores = {1: 0, 2: 0, 3: 0, 4: 0}  # Initialize scores to zero for all players
+        for row in self.grid:
+            for cell in row:
+                if cell != 0:  # If the cell is occupied by a player
+                    scores[cell] += 1
+        return scores

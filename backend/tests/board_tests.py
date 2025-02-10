@@ -73,5 +73,24 @@ class TestBoard(unittest.TestCase):
         self.board.place_piece(piece, 14, 4, self.player2)
         self.board.display_board()
 
+    def test_get_score(self):
+        # Test with an empty board
+        self.assertEqual(self.board.get_score(), {1: 0, 2: 0, 3: 0, 4: 0})
+
+        # Test with one piece placed by player 1
+        piece1 = Piece([[1, 1], [1, 0]], "V3")
+        self.board.place_piece(piece1, 0, 0, self.player1)
+        self.assertEqual(self.board.get_score(), {1: 3, 2: 0, 3: 0, 4: 0})
+
+        # Test with one piece placed by player 2
+        piece2 = Piece([[1, 1], [1, 0]], "V3")
+        self.board.place_piece(piece2, 0, 18, self.player2)
+        self.assertEqual(self.board.get_score(), {1: 3, 2: 3, 3: 0, 4: 0})
+
+        # Test with one piece placed by player 2
+        piece3 = Piece([[1, 1, 1]], "I3")
+        self.board.place_piece(piece3, 1, 2, self.player1)
+        self.assertEqual(self.board.get_score(), {1: 6, 2: 3, 3: 0, 4: 0})
+
 if __name__ == "__main__":
     unittest.main()
