@@ -1,57 +1,143 @@
 from backend.board import Board
 from backend.piece import Piece
 from backend.player import Player
+from backend.move_validator import MoveValidator
+import numpy as np
 
-class GreedyAI:
-    def __init__(self, board: Board, player: Player):
-        self.board = board
-        self.player = player
+class GreedyAI(Player):
+    def __init__(self, player_id, pieces):
+        super().__init__(player_id, pieces)
+        self.board_center = 10  # For a 20x20 board
 
-    def get_best_move(self):
+    def calculate_center_distance(self, x, y, piece):
+        """Calculate how close the piece is to the center of the board"""
+        height, width = piece.shape.shape
+        piece_center_x = x + height/2
+        piece_center_y = y + width/2
+        distance = ((piece_center_x - self.board_center)**2 + 
+                   (piece_center_y - self.board_center)**2)**0.5
+        # Normalize distance score (inverse, so closer to center = higher score)
+        max_distance = (self.board_center * 2**0.5)  # diagonal distance
+        return 1 - (distance / max_distance)
+
+    def count_blocked_moves(self, piece, x, y, board):
+        """Count how many potential moves this placement blocks for other players"""
+        blocked_positions = 0
+        height, width = piece.shape.shape
+        
+        # Check surrounding positions for potential blocking
+        for i in range(-1, height + 1):
+            for j in range(-1, width + 1):
+                check_x, check_y = x + i, y + j
+                if (0 <= check_x < board.size and 
+                    0 <= check_y < board.size):
+                    # Check if this position could be used by other players
+                    # and would be blocked by our piece
+                    if board.grid[check_x, check_y] == 0:
+                        # If adjacent to our piece, it's blocked
+                        if (0 <= i < height and 0 <= j < width and 
+                            piece.shape[i][j] == 1):
+                            blocked_positions += 1
+
+        return blocked_positions
+
+    def is_corner_position(self, x, y, piece):
+        """Check if any part of the piece touches a corner of the board"""
+        height, width = piece.shape.shape
+        corners = [(0, 0), (0, 19), (19, 0), (19, 19)]  # Board corners
+        
+        # Check if any part of the piece touches a corner
+        for i in range(height):
+            for j in range(width):
+                if piece.shape[i][j] == 1:  # If this is part of the piece
+                    piece_pos = (x + i, y + j)
+                    if piece_pos in corners:
+                        return True
+        return False
+
+    def evaluate_move(self, piece, x, y, board):
+        # Check if this is a first move (board is empty)
+        is_first_move = np.all(board.grid == 0)
+        
+        if is_first_move:
+            # For first move, prioritize corner moves but also consider piece size
+            if self.is_corner_position(x, y, piece):
+                # Convert numpy.int64 to native Python int
+                piece_size = int(np.sum(piece.shape))
+                return int(1000 + piece_size * 10)
+            return float('-inf')  # Reject non-corner moves
+        
+        # Regular move evaluation (convert to native Python types)
+        piece_size = int(np.sum(piece.shape))
+        size_score = piece_size * 10
+        center_score = float(self.calculate_center_distance(x, y, piece) * 5)
+        blocking_score = self.count_blocked_moves(piece, x, y, board) * 2
+        
+        return float(size_score + center_score + blocking_score)
+
+    def find_best_move(self, valid_moves, board):
+        """Helper method to find the best scored move from valid moves"""
+        best_score = float('-inf')
         best_move = None
-        max_score = -float('inf')
+        validator = MoveValidator(board.grid)
+        is_first_move = np.all(board.grid == 0)
+        
+        for original_piece, oriented_piece, x, y in valid_moves:
+            # Validate move based on game state
+            if is_first_move:
+                if not (validator.within_bounds(oriented_piece, x, y) and
+                    validator.not_overlapping(oriented_piece, x, y) and
+                    validator.first_move(oriented_piece, x, y)):
+                    print(f"Skipping invalid first move: {original_piece.name} at ({x},{y})")
+                    continue
+            else:
+                if not (validator.within_bounds(oriented_piece, x, y) and
+                    validator.not_overlapping(oriented_piece, x, y) and
+                    validator.touching_corner(oriented_piece, x, y, self)):
+                    print(f"Skipping invalid move: {original_piece.name} at ({x},{y})")
+                    continue
+                
+            current_score = self.evaluate_move(oriented_piece, x, y, board)
+            print(f"Valid move found: {original_piece.name} at ({x},{y}): score = {current_score}")
+            
+            # Only update if we find a strictly better score
+            if current_score > best_score:
+                print(f"New best score! Previous: {best_score}, New: {current_score}")
+                best_score = current_score
+                best_move = (original_piece, oriented_piece, x, y)
 
-        # Iterate over all available pieces for the player
-        for piece in self.player.get_available_pieces():
-            # Iterate over all possible rotations and flips of the piece
-            for transformed_piece in self.get_all_transformations(piece):
-                # Iterate over all possible positions on the board
-                for x in range(self.board.width):
-                    for y in range(self.board.height):
-                        # Check if the piece can be placed at the current position
-                        if self.board.can_place_piece(transformed_piece, x, y, self.player):
-                            # Evaluate the move
-                            score = self.evaluate_move(transformed_piece, x, y)
-                            # Update the best move if the current move has a higher score
-                            if score > max_score:
-                                max_score = score
-                                best_move = {'piece': transformed_piece, 'position': {'x': x, 'y': y}}
-
+        if best_move:
+            print(f"Selected move: {best_move[0].name} at ({best_move[2]},{best_move[3]})")
         return best_move
 
-    def get_all_transformations(self, piece: Piece):
-        transformations = []
-        for rotation in range(4):
-            rotated_piece = piece.rotate(rotation)
-            transformations.append(rotated_piece)
-            transformations.append(rotated_piece.flip())
-        return transformations
+    def choose_move(self, board):
+        valid_moves = self.find_all_valid_moves(board)
+            
+        if not valid_moves:
+            print("No valid moves found")
+            return None
 
-    def evaluate_move(self, piece: Piece, x: int, y: int) -> int:
-        # Evaluation criteria
-        score = 0
+        best_move = self.find_best_move(valid_moves, board)
+        
+        if best_move:
+            _, oriented_piece, x, y = best_move
+            # Final validation using validator
+            validator = MoveValidator(board.grid)
+            is_first_move = np.all(board.grid == 0)
+            
+            if is_first_move:
+                if not (validator.within_bounds(oriented_piece, x, y) and
+                    validator.not_overlapping(oriented_piece, x, y) and
+                    validator.first_move(oriented_piece, x, y)):
+                    print("Final move validation failed - invalid first move")
+                    return None
+            else:
+                if not (validator.within_bounds(oriented_piece, x, y) and
+                    validator.not_overlapping(oriented_piece, x, y) and
+                    validator.touching_corner(oriented_piece, x, y, self)):
+                    print("Final move validation failed - invalid regular move")
+                    return None
+                
+        return best_move
 
-        # 1. Number of squares covered by the piece
-        score += piece.shape.sum()
-
-        # 2. Proximity to the center of the board
-        center_x, center_y = self.board.grid.shape[0] // 2, self.board.grid.shape[1] // 2
-        distance_to_center = abs(center_x - x) + abs(center_y - y)
-        score -= distance_to_center  # Prefer moves closer to the center
-
-        # 3. Number of corners touched
-        if self.board.validator.touching_corner(piece, x, y, self.player):
-            score += 10  # Arbitrary value to prioritize touching corners
-
-        return score
 
