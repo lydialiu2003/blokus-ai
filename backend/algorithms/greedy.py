@@ -41,31 +41,16 @@ class GreedyAI(Player):
 
         return blocked_positions
 
-    def is_corner_position(self, x, y, piece):
-        """Check if any part of the piece touches a corner of the board"""
-        height, width = piece.shape.shape
-        corners = [(0, 0), (0, 19), (19, 0), (19, 19)]  # Board corners
-        
-        # Check if any part of the piece touches a corner
-        for i in range(height):
-            for j in range(width):
-                if piece.shape[i][j] == 1:  # If this is part of the piece
-                    piece_pos = (x + i, y + j)
-                    if piece_pos in corners:
-                        return True
-        return False
-
     def evaluate_move(self, piece, x, y, board):
         # Check if this is a first move (board is empty)
         is_first_move = np.all(board.grid == 0)
+        validator = MoveValidator(board.grid)
         
         if is_first_move:
-            # For first move, prioritize corner moves but also consider piece size
-            if self.is_corner_position(x, y, piece):
-                # Convert numpy.int64 to native Python int
+            if validator.first_move(piece, x, y):
                 piece_size = int(np.sum(piece.shape))
                 return int(1000 + piece_size * 10)
-            return float('-inf')  # Reject non-corner moves
+            return float('-inf')
         
         # Regular move evaluation (convert to native Python types)
         piece_size = int(np.sum(piece.shape))
@@ -80,27 +65,11 @@ class GreedyAI(Player):
         best_score = float('-inf')
         best_move = None
         validator = MoveValidator(board.grid)
-        is_first_move = np.all(board.grid == 0)
         
         for original_piece, oriented_piece, x, y in valid_moves:
-            # Validate move based on game state
-            if is_first_move:
-                if not (validator.within_bounds(oriented_piece, x, y) and
-                    validator.not_overlapping(oriented_piece, x, y) and
-                    validator.first_move(oriented_piece, x, y)):
-                    print(f"Skipping invalid first move: {original_piece.name} at ({x},{y})")
-                    continue
-            else:
-                if not (validator.within_bounds(oriented_piece, x, y) and
-                    validator.not_overlapping(oriented_piece, x, y) and
-                    validator.touching_corner(oriented_piece, x, y, self)):
-                    print(f"Skipping invalid move: {original_piece.name} at ({x},{y})")
-                    continue
-                
             current_score = self.evaluate_move(oriented_piece, x, y, board)
-            print(f"Valid move found: {original_piece.name} at ({x},{y}): score = {current_score}")
+            print(f"Evaluating {original_piece.name} at ({x},{y}): score = {current_score}")
             
-            # Only update if we find a strictly better score
             if current_score > best_score:
                 print(f"New best score! Previous: {best_score}, New: {current_score}")
                 best_score = current_score
