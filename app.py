@@ -22,7 +22,11 @@ def get_board():
 def get_pieces():
     current_player = board.current_player
     current_player_pieces = players[current_player].pieces
+
     pieces_data = [{"name": piece.name, "shape": piece.shape.tolist()} for piece in current_player_pieces]
+
+    print(f"📌 DEBUG: Pieces for Player {current_player} -> {pieces_data}")
+    
     return jsonify({"pieces": pieces_data})
 
 @app.route('/rotate_piece_hover', methods=['POST'])
@@ -56,34 +60,36 @@ def rotate_piece_keypress():
                 return jsonify({"shape": piece.shape.tolist()})
 
     return jsonify({"error": "Piece not found"}), 404
-
+    
 @app.route("/place_piece", methods=["POST"])
 def place_piece():
     """Attempt to place a piece on the board."""
     data = request.json
     piece_name = data.get("piece")
-    piece_shape_list = data.get("shape")  # ✅ Get shape as list of lists
+    piece_shape_list = data.get("shape")
     x, y = data.get("x"), data.get("y")
     current_player = board.current_player
 
-    # ✅ Ensure `piece_shape_list` is converted to tuple of tuples
-    try:
-        piece_shape = tuple(tuple(row) for row in piece_shape_list)  # Explicit tuple conversion
-        print(f"📌 Converted `piece_shape` to tuple: {piece_shape}")  # Debugging log
-        print(f"📌 Type of `piece_shape`: {type(piece_shape)}")  # Should be <class 'tuple'>
-    except Exception as e:
-        return jsonify({"success": False, "error": f"Invalid shape format: {str(e)}"}), 400
+    # ✅ Convert shape to NumPy array
+    piece_shape = np.array(piece_shape_list)
 
-    # ✅ Log the structure before sending it to board
-    print(f"📌 Before board.is_valid(): `piece_shape` Type: {type(piece_shape)} - Value: {piece_shape}")
+    # ✅ Find the correct `Piece` object by name
+    selected_piece = next((p for p in players[current_player].pieces if p.name == piece_name), None)
 
-    # ✅ Pass the correctly formatted tuple `piece_shape` to board.is_valid()
-    if not board.is_valid(piece_shape, x, y, players[current_player]):
-        print("❌ `is_valid()` returned False. Move is not valid.")
+    if selected_piece is None:
+        print(f"❌ DEBUG: Piece {piece_name} not found in Player {current_player}'s inventory!")
+        return jsonify({"success": False, "error": "Piece not found"}), 400
+
+    # ✅ Assign the correct shape to the piece
+    selected_piece.shape = piece_shape
+
+    # ✅ Directly call `board.place_piece()`, which returns `True` if successful
+    if not board.place_piece(selected_piece, x, y, players[current_player]):
+        print(f"❌ DEBUG: board.place_piece() rejected placement of {piece_name} for Player {current_player}.")
         return jsonify({"success": False, "error": "Invalid move."}), 400
 
-    # ✅ Place the piece on the board
-    board.place_piece(piece_shape, x, y, players[current_player])
+    # ✅ If placement was successful, remove the piece from the player's inventory
+    print(f"📌 DEBUG: Removing {piece_name} from Player {current_player}'s inventory before updating turn.")
     players[current_player].remove_piece(piece_name)
 
     # ✅ Rotate turn
@@ -95,6 +101,10 @@ def place_piece():
         "board": board.grid.tolist(),
         "next_player": next_player
     })
+
+
+
+
 
 
 

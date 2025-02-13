@@ -226,12 +226,7 @@ document.addEventListener("DOMContentLoaded", () => {
     initializeBoard();
     renderPieces();
 });
-
-
-/**
- * Handle dropping a piece onto the board.
- */
-const handleDrop = async (e, cell) => {
+const handleDrop = async (event, cell) => {
     if (!hoveredPiece || !hoveredPieceDiv) {
         console.warn("⚠️ No hovered piece detected. Cannot place.");
         return;
@@ -239,29 +234,26 @@ const handleDrop = async (e, cell) => {
 
     const startX = parseInt(cell.dataset.row);
     const startY = parseInt(cell.dataset.col);
+    const pieceName = hoveredPieceDiv.dataset.piece;
+    const pieceShape = JSON.parse(hoveredPieceDiv.dataset.shape);
+
+    console.log(`📡 Sending place request for ${pieceName} at (${startX}, ${startY})`);
 
     try {
-        console.log(`📡 Sending place request for ${hoveredPieceDiv.dataset.piece} at (${startX}, ${startY})`);
-
-        // ✅ Ensure the shape is properly formatted as a 2D list
-        const shapeArray = JSON.parse(hoveredPieceDiv.dataset.shape);
-        const formattedShape = shapeArray.map(row => [...row]); 
-
-        console.log("📌 Formatted Shape Being Sent:", formattedShape);
-
-        const response = await fetch(API_PLACE_PIECE, {
+        const response = await fetch(`${API_BASE_URL}/place_piece`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-                piece: hoveredPieceDiv.dataset.piece,
-                shape: formattedShape, 
+                piece: pieceName,
+                shape: pieceShape,
                 x: startX,
-                y: startY
+                y: startY,
             }),
         });
 
         if (!response.ok) {
             const errorData = await response.json();
+            console.error("❌ Error placing piece:", errorData);
             alert(`Invalid move: ${errorData.error}`);
             return;
         }
@@ -270,17 +262,30 @@ const handleDrop = async (e, cell) => {
         console.log("📌 [Backend Response] ->", result);
 
         if (result.success) {
+            console.log(`📌 DEBUG: ${pieceName} successfully placed. Removing from UI.`);
+
+            // ✅ Remove the placed piece before updating board state
+            const pieceElement = document.querySelector(`[data-piece="${pieceName}"]`);
+            if (pieceElement) {
+                pieceElement.remove();
+                console.log(`✅ Successfully removed piece ${pieceName} from UI.`);
+            } else {
+                console.warn("⚠️ Tried to remove piece, but it was already missing.");
+            }
+
+            // ✅ Update board state and re-fetch remaining pieces
             await updateBoardState();
-            hoveredPieceDiv.remove(); 
+            await renderPieces(); // ✅ Ensures only remaining pieces are displayed
+
             hoveredPiece = null;
             hoveredPieceDiv = null;
-            clearHover();  // ✅ Remove highlight after placement
+            clearHover();
         }
     } catch (error) {
-        console.error("❌ Error placing piece:", error);
-        alert("Error communicating with the server.");
+        console.error("❌ Network error placing piece:", error);
     }
 };
+
 
 /**
  * Render the board UI after placing a piece.
