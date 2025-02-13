@@ -23,6 +23,7 @@ export const fetchPieces = async () => {
     }
 };
 
+
 // Fetch player colors
 export const fetchPlayerColors = async () => {
     try {
