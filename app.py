@@ -2,7 +2,7 @@ from flask import Flask, jsonify, request
 from flask_cors import CORS
 import numpy as np
 from backend.board import Board
-from backend.piece import pieces
+from backend.piece import pieces, Piece
 from backend.player import Player
 from backend.move_validator import MoveValidator
 
@@ -24,9 +24,6 @@ def get_pieces():
     current_player_pieces = players[current_player].pieces
 
     pieces_data = [{"name": piece.name, "shape": piece.shape.tolist()} for piece in current_player_pieces]
-
-    print(f"📌 DEBUG: Pieces for Player {current_player} -> {pieces_data}")
-    
     return jsonify({"pieces": pieces_data})
 
 @app.route('/rotate_piece_hover', methods=['POST'])
@@ -70,29 +67,24 @@ def place_piece():
     x, y = data.get("x"), data.get("y")
     current_player = board.current_player
 
-    # ✅ Convert shape to NumPy array
     piece_shape = np.array(piece_shape_list)
 
-    # ✅ Find the correct `Piece` object by name
     selected_piece = next((p for p in players[current_player].pieces if p.name == piece_name), None)
 
     if selected_piece is None:
         print(f"❌ DEBUG: Piece {piece_name} not found in Player {current_player}'s inventory!")
         return jsonify({"success": False, "error": "Piece not found"}), 400
 
-    # ✅ Assign the correct shape to the piece
-    selected_piece.shape = piece_shape
-
-    # ✅ Directly call `board.place_piece()`, which returns `True` if successful
     if not board.place_piece(selected_piece, x, y, players[current_player]):
-        print(f"❌ DEBUG: board.place_piece() rejected placement of {piece_name} for Player {current_player}.")
         return jsonify({"success": False, "error": "Invalid move."}), 400
 
-    # ✅ If placement was successful, remove the piece from the player's inventory
-    print(f"📌 DEBUG: Removing {piece_name} from Player {current_player}'s inventory before updating turn.")
-    players[current_player].remove_piece(piece_name)
+    # call `remove_piece()`
+    before_count = len(players[current_player].pieces)
+    
+    players[current_player].remove_piece(selected_piece)  
 
-    # ✅ Rotate turn
+    after_count = len(players[current_player].pieces)
+
     next_player = (current_player % 4) + 1
     board.current_player = next_player  
 
@@ -101,11 +93,6 @@ def place_piece():
         "board": board.grid.tolist(),
         "next_player": next_player
     })
-
-
-
-
-
 
 
 if __name__ == "__main__":

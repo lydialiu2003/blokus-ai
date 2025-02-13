@@ -226,6 +226,7 @@ document.addEventListener("DOMContentLoaded", () => {
     initializeBoard();
     renderPieces();
 });
+
 const handleDrop = async (event, cell) => {
     if (!hoveredPiece || !hoveredPieceDiv) {
         console.warn("⚠️ No hovered piece detected. Cannot place.");
@@ -262,20 +263,17 @@ const handleDrop = async (event, cell) => {
         console.log("📌 [Backend Response] ->", result);
 
         if (result.success) {
-            console.log(`📌 DEBUG: ${pieceName} successfully placed. Removing from UI.`);
+            console.log(`📌 DEBUG: ${pieceName} successfully placed.`);
 
-            // ✅ Remove the placed piece before updating board state
             const pieceElement = document.querySelector(`[data-piece="${pieceName}"]`);
             if (pieceElement) {
                 pieceElement.remove();
-                console.log(`✅ Successfully removed piece ${pieceName} from UI.`);
             } else {
                 console.warn("⚠️ Tried to remove piece, but it was already missing.");
             }
 
-            // ✅ Update board state and re-fetch remaining pieces
             await updateBoardState();
-            await renderPieces(); // ✅ Ensures only remaining pieces are displayed
+            await renderPieces();
 
             hoveredPiece = null;
             hoveredPieceDiv = null;
@@ -285,6 +283,7 @@ const handleDrop = async (event, cell) => {
         console.error("❌ Network error placing piece:", error);
     }
 };
+
 
 
 /**

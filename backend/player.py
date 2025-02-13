@@ -6,18 +6,9 @@ class Player:
         self.player_id = player_id
         self.pieces = pieces
 
-    def remove_piece(self, piece_name):
-        """Removes a piece from the player's inventory."""
-        print(f"📌 DEBUG: Removing piece {piece_name} for Player {self.player_id}")
-
-        initial_pieces = len(self.pieces)
-        self.pieces = [piece for piece in self.pieces if piece.name != piece_name]
-        final_pieces = len(self.pieces)
-
-        if initial_pieces == final_pieces:
-            print(f"❌ DEBUG: Piece {piece_name} was NOT found in Player {self.player_id}'s inventory!")
-        else:
-            print(f"✅ DEBUG: Piece {piece_name} removed successfully.")
+    def remove_piece(self, piece):
+        if piece in self.pieces:
+            self.pieces.remove(piece)
 
     def choose_move(self, board):
         print(f"Player {self.player_id}, choose a move.")
