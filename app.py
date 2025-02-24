@@ -79,11 +79,7 @@ def place_piece():
         return jsonify({"success": False, "error": "Invalid move."}), 400
 
     # call `remove_piece()`
-    before_count = len(players[current_player].pieces)
-    
     players[current_player].remove_piece(selected_piece)  
-
-    after_count = len(players[current_player].pieces)
 
     next_player = (current_player % 4) + 1
     board.current_player = next_player  
@@ -91,9 +87,21 @@ def place_piece():
     return jsonify({
         "success": True,
         "board": board.grid.tolist(),
-        "next_player": next_player
+        "next_player": next_player,
+        "pieces": [{"name": piece.name, "shape": piece.shape.tolist()} for piece in players[next_player].pieces]
     })
 
+@app.route('/end_turn', methods=['POST'])
+def end_turn():
+    current_player = board.current_player
+    next_player = (current_player % 4) + 1
+    board.current_player = next_player
+    return jsonify({
+        "success": True,
+        "next_player": next_player,
+        "board": board.grid.tolist(),
+        "pieces": [{"name": piece.name, "shape": piece.shape.tolist()} for piece in players[next_player].pieces]
+    })
 
 if __name__ == "__main__":
     app.run(debug=True, host="127.0.0.1", port=5000)

@@ -305,3 +305,30 @@ const handleDrop = async (event, cell) => {
         }
     }
 };
+
+/**
+ * End the current player's turn.
+ */
+const endTurn = async () => {
+    try {
+        const response = await fetch(`${API_BASE_URL}/end_turn`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ current_player: currentPlayer }),
+        });
+
+        if (!response.ok) throw new Error(`Failed to end turn: ${response.statusText}`);
+
+        const data = await response.json();
+        console.log("✅ Turn ended:", data);
+
+        currentPlayer = data.next_player;
+        currentTurnDisplay.textContent = `Current Turn: Player ${currentPlayer}`;
+        renderBoard(data.board);
+        renderPieces(data.pieces);
+    } catch (error) {
+        console.error("❌ Error ending turn:", error);
+    }
+};
+
+document.getElementById("end-turn-button").addEventListener("click", endTurn);
