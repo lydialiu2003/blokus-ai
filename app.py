@@ -95,6 +95,13 @@ def place_piece():
 def end_turn():
     current_player = board.current_player
     next_player = (current_player % 4) + 1
+
+    # Check if the next player has valid moves
+    while not players[next_player].find_all_valid_moves(board):
+        next_player = (next_player % 4) + 1
+        if next_player == current_player:
+            break  # All players have no valid moves
+
     board.current_player = next_player
     return jsonify({
         "success": True,

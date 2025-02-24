@@ -224,7 +224,16 @@ const renderPieceVisual = (pieceShape, pieceDiv) => {
  */
 document.addEventListener("DOMContentLoaded", () => {
     initializeBoard();
-    renderPieces();
+
+    const endTurnButton = document.getElementById("end-turn-button");
+    if (endTurnButton) {
+        endTurnButton.addEventListener("click", () => {
+            console.log("End Turn button clicked");
+            endTurn();
+        });
+    } else {
+        console.error("End Turn button not found in the DOM");
+    }
 });
 
 const handleDrop = async (event, cell) => {
@@ -311,6 +320,7 @@ const handleDrop = async (event, cell) => {
  */
 const endTurn = async () => {
     try {
+        console.log("Calling /end_turn endpoint");
         const response = await fetch(`${API_BASE_URL}/end_turn`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
