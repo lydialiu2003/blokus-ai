@@ -2,6 +2,7 @@ from backend.board import Board
 from backend.player import Player
 from backend.piece import Piece
 from backend.move_validator import MoveValidator
+from backend.algorithms.greedy import GreedyAI
 
 
 class GameManager:
@@ -26,15 +27,21 @@ class GameManager:
         current_player = self.players[self.current_turn]
         print(f"Player {current_player.player_id}'s turn")
 
-        valid_moves = current_player.find_all_valid_moves(self.board)
-        print(f"Player {current_player.player_id} has {len(valid_moves)} valid moves available.")
-
-        move = None
-        attempts = 0
-        while move is None and attempts < 3:  # Limit the number of attempts
+        # Use the GreedyAI's choose_move function if the player is an AI
+        if isinstance(current_player, GreedyAI):
+            print(f"Player {current_player.player_id} is an AI. Calculating move...")
             move = current_player.choose_move(self.board)
-            attempts += 1
-        
+        else:
+            print(f"Player {current_player.player_id} is a user. Waiting for input...")
+            valid_moves = current_player.find_all_valid_moves(self.board)
+            print(f"Player {current_player.player_id} has {len(valid_moves)} valid moves available.")
+
+            move = None
+            attempts = 0
+            while move is None and attempts < 3:  # Limit the number of attempts
+                move = current_player.choose_move(self.board)
+                attempts += 1
+
         if move is None:
             print("No valid move made. Skipping turn.")
             self.next_turn()
