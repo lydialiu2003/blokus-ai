@@ -5,6 +5,7 @@ from backend.board import Board
 from backend.piece import pieces, Piece
 from backend.player import Player
 from backend.move_validator import MoveValidator
+from backend.game_manager import GameManager  # Import GameManager
 
 app = Flask(__name__)
 CORS(app)
@@ -13,6 +14,9 @@ CORS(app)
 players = {i: Player(i, list(pieces.values())) for i in range(1, 5)}
 board = Board(size=20)
 board.current_player = 1
+
+# Initialize GameManager
+game_manager = GameManager(players[1], players[2], players[3], players[4])
 
 @app.route('/get_board', methods=['GET'])
 def get_board():
@@ -77,6 +81,9 @@ def place_piece():
 
     if not board.place_piece(selected_piece, x, y, players[current_player]):
         return jsonify({"success": False, "error": "Invalid move."}), 400
+
+    # ✅ Log the move
+    game_manager.log_move(current_player, piece_name, x, y)
 
     # call `remove_piece()`
     players[current_player].remove_piece(selected_piece)  
