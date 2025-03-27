@@ -91,38 +91,19 @@ class GreedyAI(Player):
 
     def choose_move(self, board):
         debug_print("Starting choose_move")
-        
-        # Early return if board is full
-        if np.all(board.grid != 0):
-            debug_print("Board is full - no valid moves possible")
-            return None
             
-        # Use different move finding strategy for first move
-        if np.all(board.grid == 0):
-            debug_print("First move detected - finding corner moves")
-            valid_moves = self.find_all_valid_first_moves(board)
-            if valid_moves:
-                # For first move, just take the first valid corner move
-                return valid_moves[0]
-        else:
-            valid_moves = self.find_all_valid_moves(board)
-            
-        debug_print(f"Found {len(valid_moves)} potential moves")
-        
-        if not valid_moves:
-            debug_print("No valid moves found")
-            return None
-            
+        valid_moves = self.find_all_valid_moves(board)
+
         # Find best move
         best_score = float('-inf')
         best_move = None
         
-        for original_piece, oriented_piece, x, y in valid_moves:
-            utility = self.calculate_utility(oriented_piece, x, y, board)
-            debug_print(f"Evaluating move", oriented_piece, x, y, f"Score: {utility}")
+        for piece, oriention_piece, x, y in valid_moves:
+            utility = self.calculate_utility(oriention_piece, x, y, board)
+            debug_print(f"Evaluating move", oriention_piece, x, y, f"Score: {utility}")
             if utility > best_score:
                 best_score = utility
-                best_move = (original_piece, oriented_piece, x, y)
+                best_move = (piece, oriention_piece, x, y)
                 debug_print("New best move found")
         
         if best_move:

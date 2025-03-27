@@ -30,6 +30,8 @@ class GameManager:
         # Use the GreedyAI's choose_move function if the player is an AI
         if isinstance(current_player, GreedyAI):
             print(f"Player {current_player.player_id} is an AI. Calculating move...")
+            valid_moves = current_player.find_all_valid_moves(self.board)
+            print(f"Player {current_player.player_id} has {len(valid_moves)} valid moves available.")
             move = current_player.choose_move(self.board)
         else:
             print(f"Player {current_player.player_id} is a user. Waiting for input...")

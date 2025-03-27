@@ -17,7 +17,7 @@ python3 backend/tests/play_game.py
 """
 
 def main():
-    player1 = Player(1, list(pieces.values()))
+    player1 = GreedyAI(1, list(pieces.values()))
     player2 = GreedyAI(2, list(pieces.values()))
     player3 = Player(3, list(pieces.values()))
     player4 = GreedyAI(4, list(pieces.values()))
