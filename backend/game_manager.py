@@ -60,6 +60,15 @@ class GameManager:
         if self.check_game_over():
             self.game_over = True
             print("Game over!")
+
+            # Get scores and sort players by score
+            scores = self.board.get_score()
+            sorted_scores = sorted(scores.items(), key=lambda x: x[1], reverse=True)
+
+            # Print rankings
+            print("Final Rankings:")
+            for rank, (player_id, score) in enumerate(sorted_scores, start=1):
+                print(f"{rank}. Player {player_id} - Score: {score}")
     
     def play_game(self):
         while not self.game_over:

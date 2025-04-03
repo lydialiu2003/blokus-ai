@@ -47,20 +47,9 @@ class GreedyAI(Player):
         # Create a board copy for evaluation
         test_board = Board(board.size)
         test_board.grid = np.copy(board.grid)
-        
-        if not test_board.is_valid(piece, x, y, self):
-            return float('-inf')
             
         # Base score from number of tiles
         tile_count = int(np.sum(piece.shape))
-        
-        # If board is full, return -inf
-        if np.all(board.grid != 0):
-            return float('-inf')
-            
-        # If it's first move, prioritize larger pieces
-        if np.all(board.grid == 0):
-            return float(1000 + tile_count)  # Let find_all_valid_moves handle corner validation
         
         # Calculate distance from closest tile to center
         min_distance = float('inf')
@@ -73,19 +62,19 @@ class GreedyAI(Player):
                               abs(tile_y - self.board_center)) / 2
                     min_distance = min(min_distance, distance)
         
-        # Calculate blocking score
-        board_copy = Board(board.size)
-        board_copy.grid = np.copy(board.grid)
-        board_copy.place_piece(piece, x, y, self)
+        # # Calculate blocking score
+        # board_copy = Board(board.size)
+        # board_copy.grid = np.copy(board.grid)
+        # board_copy.place_piece(piece, x, y, self)
         
         blocked_score = 0
-        for player_id in range(1, 5):
-            if player_id != self.player_id:
-                test_player = Player(player_id, self.pieces)
-                moves_before = len(test_player.find_all_valid_moves(board))
-                moves_after = len(test_player.find_all_valid_moves(board_copy))
-                if moves_after < moves_before:
-                    blocked_score += 1
+        # for player_id in range(1, 5):
+        #     if player_id != self.player_id:
+        #         test_player = Player(player_id, self.pieces)
+        #         moves_before = len(test_player.find_all_valid_moves(board))
+        #         moves_after = len(test_player.find_all_valid_moves(board_copy))
+        #         if moves_after < moves_before:
+        #             blocked_score += 1
         
         return float(tile_count + min_distance + blocked_score)
 
