@@ -3,6 +3,7 @@ from backend.player import Player
 from backend.piece import Piece
 from backend.move_validator import MoveValidator
 from backend.algorithms.greedy import GreedyAI
+from backend.algorithms.minimax import MinimaxAI
 
 
 class GameManager:
@@ -29,10 +30,15 @@ class GameManager:
 
         # Use the GreedyAI's choose_move function if the player is an AI
         if isinstance(current_player, GreedyAI):
-            print(f"Player {current_player.player_id} is an AI. Calculating move...")
+            print(f"Player {current_player.player_id} is a greedy AI. Calculating move...")
             valid_moves = current_player.find_all_valid_moves(self.board)
             print(f"Player {current_player.player_id} has {len(valid_moves)} valid moves available.")
             move = current_player.choose_move(self.board)
+        if isinstance(current_player, MinimaxAI):
+            print(f"Player {current_player.player_id} is a minimax AI. Calculating move...")
+            valid_moves = current_player.find_all_valid_moves(self.board)
+            print(f"Player {current_player.player_id} has {len(valid_moves)} valid moves available.")
+            move = current_player.choose_move(self.board)    
         else:
             print(f"Player {current_player.player_id} is a user. Waiting for input...")
             valid_moves = current_player.find_all_valid_moves(self.board)

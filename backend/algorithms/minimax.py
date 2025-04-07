@@ -4,142 +4,166 @@ from backend.player import Player
 import numpy as np
 from copy import deepcopy
 
+def debug_print(message, piece=None, x=None, y=None, validation=None):
+    """Debug print function for minimax algorithm"""
+    print("\nDEBUG:", message)
+    if piece is not None and hasattr(piece, 'name'):
+        print(f"Piece: {piece.name}")
+        print("Shape:\n", piece.shape)
+    if x is not None and y is not None:
+        print(f"Position: ({x}, {y})")
+    if validation is not None:
+        print(f"Additional info: {validation}")
+    print("-" * 50)
+
 class MinimaxAI(Player):
-    """
-    MinimaxAI implements an AI player for Blokus using the Minimax algorithm with alpha-beta pruning.
-    It evaluates moves based on territory control, future move potential, and board position.
-    """
     def __init__(self, player_id, pieces, max_depth=3):
         super().__init__(player_id, pieces)
-        self.max_depth = max_depth  # How many moves ahead to look
-        self.board_center = 10      # Center of the 20x20 board
+        self.max_depth = max_depth
+        self.board_center = 10
 
-    def find_all_valid_first_moves(self, board):
-        """
-        Finds all valid first moves which must be in a corner.
-        Returns: List of tuples (original_piece, oriented_piece, x, y)
-        """
-        valid_first_moves = []
-        corners = [(0, 0), (0, board.size-1), (board.size-1, 0), (board.size-1, board.size-1)]
+    def count_valid_corners(self, piece, x, y, board):
+        """Count number of valid corners created by placing this piece"""
+        test_board = Board(board.size)
+        test_board.grid = np.copy(board.grid)
+        test_board.place_piece(piece, x, y, self)
         
-        for piece in self.pieces:
-            for orientation in piece.all_orientations():
-                oriented_piece = Piece(orientation, piece.name)
-                for x, y in corners:
-                    if board.is_valid(oriented_piece, x, y, self):
-                        valid_first_moves.append((piece, oriented_piece, x, y))
-        return valid_first_moves
-
-    def calculate_utility(self, board, player_id):
-        """
-        Evaluates board state using three main factors:
-        1. Territory control (number of tiles placed)
-        2. Move potential (number of possible future moves)
-        3. Board position (proximity to center is better)
+        valid_corners = set()
+        height, width = piece.shape.shape
         
-        Returns: Float representing the board state's value
-        """
-        # Territory control (number of tiles)
-        scores = board.get_score()
-        my_tiles = scores.get(player_id, 0)
+        for i in range(height):
+            for j in range(width):
+                if piece.shape[i][j] == 1:
+                    diagonals = [
+                        (x + i + 1, y + j + 1),
+                        (x + i + 1, y + j - 1),
+                        (x + i - 1, y + j + 1),
+                        (x + i - 1, y + j - 1)
+                    ]
+                    
+                    for dx, dy in diagonals:
+                        if not (0 <= dx < board.size and 0 <= dy < board.size):
+                            continue
+                        if (dx, dy) in valid_corners:
+                            continue
+                        if test_board.grid[dx, dy] != 0:
+                            continue
+                            
+                        valid = True
+                        for adj_x, adj_y in [(dx-1, dy), (dx+1, dy), (dx, dy-1), (dx, dy+1)]:
+                            if (0 <= adj_x < board.size and 0 <= adj_y < board.size):
+                                if test_board.grid[adj_x, adj_y] == self.player_id:
+                                    valid = False
+                                    break
+                        
+                        if valid:
+                            valid_corners.add((dx, dy))
         
-        # Calculate potential future moves (mobility)
-        test_player = Player(player_id, self.pieces)
-        available_moves = len(test_player.find_all_valid_moves(board))
+        return len(valid_corners)
+
+    def calculate_utility(self, piece, x, y, board):
+        """Calculate utility score based on tiles, distance, and corners"""
+        # Base score from number of tiles
+        tile_count = int(np.sum(piece.shape))
         
-        # Evaluate board position (center control)
-        territory_score = 0
-        for i in range(board.size):
-            for j in range(board.size):
-                if board.grid[i][j] == player_id:
-                    # Pieces closer to center are worth more
-                    distance_to_center = abs(i - self.board_center) + abs(j - self.board_center)
-                    territory_score += (20 - distance_to_center)
-
-        # Weight and combine the factors
-        # Tiles placed: highest weight (10)
-        # Available moves: medium weight (5)
-        # Territory position: varies by distance to center
-        utility = (my_tiles * 10) + (available_moves * 5) + territory_score
-        return float(utility)
-
-    def choose_move(self, board):
-        """
-        Main method to select the best move using minimax algorithm.
-        Handles special cases for first move and full board.
-        Returns: Tuple (original_piece, oriented_piece, x, y) or None
-        """
-        # Handle full board case
-        if np.all(board.grid != 0):
-            return None
-            
-        # Handle first move case - choose largest piece for corner
-        if np.all(board.grid == 0):
-            valid_moves = self.find_all_valid_first_moves(board)
-            if valid_moves:
-                return max(valid_moves, 
-                         key=lambda move: len(np.where(move[1].shape == 1)[0]))
-
-        # Use minimax for all other moves
-        best_move = self.minimax(board, self.max_depth, float('-inf'), float('inf'), True)[1]
-        return best_move
+        # Calculate distance from closest tile to center
+        min_distance = float('inf')
+        height, width = piece.shape.shape
+        for i in range(height):
+            for j in range(width):
+                if piece.shape[i][j] == 1:
+                    tile_x, tile_y = x + i, y + j
+                    distance = (abs(tile_x - self.board_center) + 
+                              abs(tile_y - self.board_center))
+                    min_distance = min(min_distance, distance)
+        
+        # Count valid corners for future moves
+        corner_count = self.count_valid_corners(piece, x, y, board)
+        
+        return float(tile_count - min_distance + corner_count)
 
     def minimax(self, board, depth, alpha, beta, maximizing_player):
-        """
-        Implements minimax algorithm with alpha-beta pruning.
-        
-        Parameters:
-        - board: Current game state
-        - depth: How many moves ahead to look
-        - alpha: Best value for maximizing player
-        - beta: Best value for minimizing player
-        - maximizing_player: True if current player is maximizing
-        
-        Returns: Tuple (score, move)
-        """
-        # Base cases: reach max depth or no valid moves
-        if depth == 0 or not self.find_all_valid_moves(board):
-            return self.calculate_utility(board, self.player_id), None
-
+        """Minimax algorithm with alpha-beta pruning"""
+        if depth == 0:
+            return None, self.evaluate_board(board)
+                
         valid_moves = self.find_all_valid_moves(board)
         if not valid_moves:
-            return self.calculate_utility(board, self.player_id), None
+            return None, float('-inf')
+        
+        # Calculate utility for all moves and sort by utility
+        moves_with_utility = [
+            (piece, oriented_piece, x, y, self.calculate_utility(oriented_piece, x, y, board))
+            for piece, oriented_piece, x, y in valid_moves
+        ]
+        moves_with_utility.sort(key=lambda x: x[4], reverse=True)
+        
+        # Take top 10 moves after sorting by utility
+        valid_moves = [(m[0], m[1], m[2], m[3]) for m in moves_with_utility[:10]]
 
         best_move = None
         if maximizing_player:
-            # Maximizing player tries to get highest score
             max_eval = float('-inf')
-            # Limit move exploration to prevent exponential growth
-            for original_piece, oriented_piece, x, y in valid_moves[:10]:
-                board_copy = deepcopy(board)
+            for piece, oriented_piece, x, y in valid_moves[:10]:
+                # Calculate immediate utility of this move
+                immediate_utility = self.calculate_utility(oriented_piece, x, y, board)
+                
+                # Create new board with this move
+                board_copy = Board(board.size)
+                board_copy.grid = np.copy(board.grid)
                 board_copy.place_piece(oriented_piece, x, y, self)
                 
-                eval_score, _ = self.minimax(board_copy, depth - 1, alpha, beta, False)
+                # Combine immediate utility with future evaluation
+                _, future_eval = self.minimax(board_copy, depth - 1, alpha, beta, False)
+                eval_score = immediate_utility + future_eval
                 
                 if eval_score > max_eval:
                     max_eval = eval_score
-                    best_move = (original_piece, oriented_piece, x, y)
-                
-                # Alpha-beta pruning
+                    best_move = (piece, oriented_piece, x, y)
                 alpha = max(alpha, eval_score)
                 if beta <= alpha:
-                    break  # Beta cutoff
-            return max_eval, best_move
+                    break
+            return best_move, max_eval
         else:
-            # Minimizing player tries to get lowest score
             min_eval = float('inf')
-            for original_piece, oriented_piece, x, y in valid_moves[:10]:
-                board_copy = deepcopy(board)
+            for piece, oriented_piece, x, y in valid_moves[:10]:
+                # Calculate immediate utility of this move
+                immediate_utility = self.calculate_utility(oriented_piece, x, y, board)
+                
+                board_copy = Board(board.size)
+                board_copy.grid = np.copy(board.grid)
                 board_copy.place_piece(oriented_piece, x, y, self)
                 
-                eval_score, _ = self.minimax(board_copy, depth - 1, alpha, beta, True)
+                # Combine immediate utility with future evaluation
+                _, future_eval = self.minimax(board_copy, depth - 1, alpha, beta, True)
+                eval_score = immediate_utility + future_eval
                 
                 if eval_score < min_eval:
                     min_eval = eval_score
-                    best_move = (original_piece, oriented_piece, x, y)
-                
-                # Alpha-beta pruning
+                    best_move = (piece, oriented_piece, x, y)
                 beta = min(beta, eval_score)
                 if beta <= alpha:
-                    break  # Alpha cutoff
-            return min_eval, best_move
+                    break
+            return best_move, min_eval
+        
+    def evaluate_board(self, board):
+        """Evaluate the current board state"""
+        # Count my pieces vs opponent pieces
+        my_pieces = np.sum(board.grid == self.player_id)
+        opponent_pieces = np.sum(board.grid != 0) - my_pieces
+        
+        # Look for valid moves I have
+        valid_moves = len(self.find_all_valid_moves(board))
+        
+        # Combined score favoring more pieces and more available moves
+        return float(my_pieces - opponent_pieces + (0.5 * valid_moves))
+
+    def choose_move(self, board):
+        """Choose best move using minimax"""
+        debug_print("Starting minimax search")
+        
+        # Use minimax for all other moves
+        best_move, _ = self.minimax(board, self.max_depth, float('-inf'), float('inf'), True)
+        if best_move:
+            debug_print("Selected move", best_move[1], best_move[2], best_move[3])
+        return best_move
