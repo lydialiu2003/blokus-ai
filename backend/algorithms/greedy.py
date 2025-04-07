@@ -20,25 +20,6 @@ class GreedyAI(Player):
         super().__init__(player_id, pieces)
         self.board_center = (9.5, 9.5)  # For a 19x19 board
 
-    def find_all_valid_first_moves(self, board):
-        """Find all valid first moves (must touch a corner)"""
-        valid_first_moves = []
-        corners = [(0, 0), (0, board.size-1), (board.size-1, 0), (board.size-1, board.size-1)]
-        
-        for piece in self.pieces:
-            for orientation in piece.all_orientations():
-                oriented_piece = Piece(orientation, piece.name)
-                height, width = oriented_piece.shape.shape
-                
-                # Try placing directly at corners
-                for x, y in corners:
-                    if board.is_valid(oriented_piece, x, y, self):
-                        debug_print(f"Found valid first move at corner", oriented_piece, x, y)
-                        valid_first_moves.append((piece, oriented_piece, x, y))
-        
-        debug_print(f"Found {len(valid_first_moves)} valid first moves")
-        return valid_first_moves
-
     def count_valid_corners(self, piece, x, y, board):
         """Count valid corners for future moves after placing this piece"""
         # Create a board copy with the piece placed
