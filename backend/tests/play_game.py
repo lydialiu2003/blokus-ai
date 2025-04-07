@@ -9,6 +9,7 @@ from backend.player import Player
 from backend.piece import pieces
 from backend.game_manager import GameManager
 from backend.algorithms.greedy import GreedyAI
+from backend.algorithms.minimax import MinimaxAI
 
 
 """
