@@ -33,6 +33,8 @@ class Node:
         return len(self.untried_moves) == 0
 
     def best_child(self, c_param=1.414):
+        if not self.children:
+            return None
         choices = [(child.value / child.visits) + c_param * 
                   math.sqrt(2 * math.log(self.visits) / child.visits)
                   for child in self.children]
@@ -42,101 +44,129 @@ class MonteCarloAI(Player):
     def __init__(self, player_id, pieces, simulation_time=1):
         super().__init__(player_id, pieces)
         self.simulation_time = simulation_time
-        self.board_center = 10
+        self.board_center = (9.5, 9.5)  # Match GreedyAI's board center
 
-    def calculate_utility(self, board, player_id):
-        """Using the same utility calculation as Minimax/Greedy"""
-        # Territory control
-        scores = board.get_score()
-        my_tiles = scores.get(player_id, 0)
+    def count_valid_corners(self, piece, x, y, board):
+        """Same corner counting logic as GreedyAI"""
+        test_board = Board(board.size)
+        test_board.grid = np.copy(board.grid)
+        test_board.place_piece(piece, x, y, self)
         
-        # Move potential
-        test_player = Player(player_id, self.pieces)
-        available_moves = len(test_player.find_all_valid_moves(board))
+        valid_corners = set()
+        height, width = piece.shape.shape
         
-        # Board position evaluation
-        territory_score = 0
-        for i in range(board.size):
-            for j in range(board.size):
-                if board.grid[i][j] == player_id:
-                    distance_to_center = abs(i - self.board_center) + abs(j - self.board_center)
-                    territory_score += (20 - distance_to_center)
-
-        return float((my_tiles * 10) + (available_moves * 5) + territory_score)
+        for i in range(height):
+            for j in range(width):
+                if piece.shape[i][j] == 1:
+                    diagonals = [
+                        (x + i + 1, y + j + 1),
+                        (x + i + 1, y + j - 1),
+                        (x + i - 1, y + j + 1),
+                        (x + i - 1, y + j - 1)
+                    ]
+                    
+                    for dx, dy in diagonals:
+                        if not (0 <= dx < board.size and 0 <= dy < board.size):
+                            continue
+                        if (dx, dy) in valid_corners:
+                            continue
+                        if test_board.grid[dx, dy] != 0:
+                            continue
+                        
+                        valid = True
+                        for adj_x, adj_y in [(dx-1, dy), (dx+1, dy), (dx, dy-1), (dx, dy+1)]:
+                            if (0 <= adj_x < board.size and 0 <= adj_y < board.size):
+                                if test_board.grid[adj_x, adj_y] == self.player_id:
+                                    valid = False
+                                    break
+                        
+                        if valid:
+                            valid_corners.add((dx, dy))
+        
+        return len(valid_corners)
+    
+    def calculate_utility(self, piece, x, y, board):
+        """Same utility calculation as GreedyAI"""
+        # Base score from number of tiles
+        tile_count = int(np.sum(piece.shape))
+        
+        # Calculate distance from closest tile to center
+        min_distance = float('inf')
+        height, width = piece.shape.shape
+        for i in range(height):
+            for j in range(width):
+                if piece.shape[i][j] == 1:
+                    tile_x, tile_y = x + i, y + j
+                    distance = (abs(tile_x - self.board_center[0]) + 
+                              abs(tile_y - self.board_center[1]))
+                    min_distance = min(min_distance, distance)
+        
+        # Count valid corners for future moves
+        corner_count = self.count_valid_corners(piece, x, y, board)
+        
+        return float(tile_count - min_distance + (0.5 * corner_count))
 
     def choose_move(self, board):
-        if np.all(board.grid != 0):
-            return None
-            
-        if np.all(board.grid == 0):
-            valid_moves = self.find_all_valid_first_moves(board)
-            if valid_moves:
-                return max(valid_moves, 
-                         key=lambda move: len(np.where(move[1].shape == 1)[0]))
-
         return self.monte_carlo_search(board)
 
     def monte_carlo_search(self, board):
         root = Node(board, self)
+        
+        # Ensure we expand at least one child
+        if not root.untried_moves:
+            return None
+            
+        # Run MCTS for given time
         end_time = time.time() + self.simulation_time
-
         while time.time() < end_time:
             node = root
-            board_state = deepcopy(board)
-
-            # Selection
-            while node.fully_expanded() and node.children:
+            board_copy = deepcopy(board)
+            
+            # Selection and Expansion
+            while node.untried_moves == [] and node.children != []:
                 node = node.best_child()
                 if node.move:
-                    board_state.place_piece(node.move[1], node.move[2], node.move[3], node.player)
-
-            # Expansion
+                    board_copy.place_piece(node.move[1], node.move[2], node.move[3], self)
+            
+            # Expand
             if node.untried_moves:
-                move = node.untried_moves[0]
-                board_state.place_piece(move[1], move[2], move[3], node.player)
-                node = node.add_child(move, board_state, self)
-
-            # Simulation
-            result = self.simulate(board_state)
-
-            # Backpropagation
-            while node:
-                node.update(result)
+                move = node.untried_moves[0]  # Take first untried move
+                board_copy.place_piece(move[1], move[2], move[3], self)
+                node = node.add_child(move, board_copy, self)
+                
+            # Simulation and Backpropagation
+            score = self.simulate(board_copy)
+            while node is not None:
+                node.update(score)
                 node = node.parent
-
-        # Return the move of the best child
+                
+        # Choose best move
         best_child = root.best_child(c_param=0.0)
-        return best_child.move
+        if best_child and best_child.move:
+            return best_child.move
+            
+        # If no moves found, return None
+        return None
 
     def simulate(self, board):
-        """Run a random simulation from this board state"""
-        simulation_board = deepcopy(board)
-        current_player = self
-        moves_count = 0
-        max_moves = 10  # Limit simulation depth
+            """Run simulation using the same utility calculation"""
+            simulation_board = deepcopy(board)
+            current_player = self
+            moves_count = 0
+            max_moves = 10
 
-        while moves_count < max_moves:
-            valid_moves = current_player.find_all_valid_moves(simulation_board)
-            if not valid_moves:
-                break
+            while moves_count < max_moves:
+                valid_moves = current_player.find_all_valid_moves(simulation_board)
+                if not valid_moves:
+                    break
 
-            # Make a random move
-            move = random.choice(valid_moves)
-            simulation_board.place_piece(move[1], move[2], move[3], current_player)
-            moves_count += 1
-
-        # Use the utility function to evaluate the final state
-        return self.calculate_utility(simulation_board, self.player_id)
-
-    def find_all_valid_first_moves(self, board):
-        """Same as in Minimax/Greedy"""
-        valid_first_moves = []
-        corners = [(0, 0), (0, board.size-1), (board.size-1, 0), (board.size-1, board.size-1)]
-        
-        for piece in self.pieces:
-            for orientation in piece.all_orientations():
-                oriented_piece = Piece(orientation, piece.name)
-                for x, y in corners:
-                    if board.is_valid(oriented_piece, x, y, self):
-                        valid_first_moves.append((piece, oriented_piece, x, y))
-        return valid_first_moves
+                move = random.choice(valid_moves)
+                utility = self.calculate_utility(move[1], move[2], move[3], simulation_board)
+                simulation_board.place_piece(move[1], move[2], move[3], current_player)
+                moves_count += 1
+                
+            # Use greedy-style utility for final evaluation
+            final_move = valid_moves[0] if valid_moves else None
+            if final_move:
+                return self.calculate_utility(final_move[1], final_move[2], final_move[3], simulation_board)
+            return float('-inf')

@@ -10,6 +10,7 @@ from backend.piece import pieces
 from backend.game_manager import GameManager
 from backend.algorithms.greedy import GreedyAI
 from backend.algorithms.minimax import MinimaxAI
+from backend.algorithms.monte_carlo import MonteCarloAI
 
 
 """
@@ -18,7 +19,7 @@ python3 backend/tests/play_game.py
 """
 
 def main():
-    player1 = MinimaxAI(1, list(pieces.values()))
+    player1 = MonteCarloAI(1, list(pieces.values()))
     player2 = GreedyAI(2, list(pieces.values()))
     player3 = GreedyAI(3, list(pieces.values()))
     player4 = GreedyAI(4, list(pieces.values()))

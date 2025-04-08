@@ -4,6 +4,7 @@ from backend.piece import Piece
 from backend.move_validator import MoveValidator
 from backend.algorithms.greedy import GreedyAI
 from backend.algorithms.minimax import MinimaxAI
+from backend.algorithms.monte_carlo import MonteCarloAI
 
 
 class GameManager:
@@ -38,7 +39,12 @@ class GameManager:
             print(f"Player {current_player.player_id} is a minimax AI. Calculating move...")
             valid_moves = current_player.find_all_valid_moves(self.board)
             print(f"Player {current_player.player_id} has {len(valid_moves)} valid moves available.")
-            move = current_player.choose_move(self.board)    
+            move = current_player.choose_move(self.board)
+        if isinstance(current_player, MonteCarloAI):
+            print(f"Player {current_player.player_id} is a monte carlo AI. Calculating move...")
+            valid_moves = current_player.find_all_valid_moves(self.board)
+            print(f"Player {current_player.player_id} has {len(valid_moves)} valid moves available.")
+            move = current_player.choose_move(self.board)        
         else:
             print(f"Player {current_player.player_id} is a user. Waiting for input...")
             valid_moves = current_player.find_all_valid_moves(self.board)
