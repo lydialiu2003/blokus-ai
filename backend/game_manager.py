@@ -35,12 +35,12 @@ class GameManager:
             valid_moves = current_player.find_all_valid_moves(self.board)
             print(f"Player {current_player.player_id} has {len(valid_moves)} valid moves available.")
             move = current_player.choose_move(self.board)
-        if isinstance(current_player, MinimaxAI):
+        elif isinstance(current_player, MinimaxAI):
             print(f"Player {current_player.player_id} is a minimax AI. Calculating move...")
             valid_moves = current_player.find_all_valid_moves(self.board)
             print(f"Player {current_player.player_id} has {len(valid_moves)} valid moves available.")
             move = current_player.choose_move(self.board)
-        if isinstance(current_player, MonteCarloAI):
+        elif isinstance(current_player, MonteCarloAI):
             print(f"Player {current_player.player_id} is a monte carlo AI. Calculating move...")
             valid_moves = current_player.find_all_valid_moves(self.board)
             print(f"Player {current_player.player_id} has {len(valid_moves)} valid moves available.")

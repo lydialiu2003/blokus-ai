@@ -41,7 +41,7 @@ class Node:
         return self.children[choices.index(max(choices))]
 
 class MonteCarloAI(Player):
-    def __init__(self, player_id, pieces, simulation_time=1):
+    def __init__(self, player_id, pieces, simulation_time=30):
         super().__init__(player_id, pieces)
         self.simulation_time = simulation_time
         self.board_center = (9.5, 9.5)  # Match GreedyAI's board center
@@ -149,24 +149,30 @@ class MonteCarloAI(Player):
         return None
 
     def simulate(self, board):
-            """Run simulation using the same utility calculation"""
             simulation_board = deepcopy(board)
             current_player = self
             moves_count = 0
-            max_moves = 10
+            max_moves = 20  # Increased depth
+            total_utility = 0
 
             while moves_count < max_moves:
                 valid_moves = current_player.find_all_valid_moves(simulation_board)
                 if not valid_moves:
                     break
 
-                move = random.choice(valid_moves)
-                utility = self.calculate_utility(move[1], move[2], move[3], simulation_board)
+                # Sort moves by utility and choose from top moves
+                moves_with_utility = [
+                    (move, self.calculate_utility(move[1], move[2], move[3], simulation_board))
+                    for move in valid_moves
+                ]
+                moves_with_utility.sort(key=lambda x: x[1], reverse=True)
+                top_moves = moves_with_utility[:5]  # Consider only top 5 moves
+                
+                # Choose randomly from top moves
+                move, utility = random.choice(top_moves)
+                total_utility += utility
+                
                 simulation_board.place_piece(move[1], move[2], move[3], current_player)
                 moves_count += 1
-                
-            # Use greedy-style utility for final evaluation
-            final_move = valid_moves[0] if valid_moves else None
-            if final_move:
-                return self.calculate_utility(final_move[1], final_move[2], final_move[3], simulation_board)
-            return float('-inf')
+
+            return total_utility
