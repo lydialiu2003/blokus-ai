@@ -7,6 +7,9 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
+  <!-- Gray overlay -->
+  <div id="overlay" class="overlay"></div>
+
   <div class="info">
     <h1>Blokus AI</h1>
     <h2 id="current-turn">Current Turn: Player 1</h2>
@@ -19,6 +22,12 @@
   <div class="game-container">
     <!-- Board area -->
     <div id="board" class="board"></div>
+
+    <!-- Final rankings area -->
+    <div id="final-rankings" class="final-rankings hidden">
+      <h1>Final Rankings</h1>
+      <ul id="rankings-list"></ul>
+    </div>
   </div>
 
   <!-- Pieces area at the bottom -->

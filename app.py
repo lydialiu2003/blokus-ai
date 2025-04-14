@@ -100,15 +100,24 @@ def end_turn():
     current_player = board.current_player
     next_player = (current_player % 4) + 1
 
-    # Check if the next player has valid moves
+    # Skip players with no valid moves
     while not players[next_player].find_all_valid_moves(board):
         next_player = (next_player % 4) + 1
         if next_player == current_player:
-            break  # All players have no valid moves
+            # All players have no valid moves, end the game
+            scores = board.get_score()
+            sorted_scores = sorted(scores.items(), key=lambda x: x[1], reverse=True)
+            rankings = [{"player_id": player_id, "score": score} for player_id, score in sorted_scores]
+            return jsonify({
+                "success": True,
+                "game_over": True,
+                "rankings": rankings
+            })
 
     board.current_player = next_player
     return jsonify({
         "success": True,
+        "game_over": False,
         "next_player": next_player,
         "board": board.grid.tolist(),
         "pieces": [{"name": piece.name, "shape": piece.shape.tolist()} for piece in players[next_player].pieces]
@@ -152,19 +161,34 @@ def process_ai_move():
             print(f"✅ AI chose move: {piece.name} at ({x}, {y})")
             board.place_piece(piece, x, y, player)
             players[current_player].remove_piece(original_piece)
-            next_player = (current_player % 4) + 1
-            board.current_player = next_player
-            return jsonify({
-                "success": True,
-                "board": board.grid.tolist(),
-                "next_player": next_player,
-                "pieces": [{"name": piece.name, "shape": piece.shape.tolist()} for piece in players[next_player].pieces]
-            })
         else:
-            print("❌ No valid moves for AI.")
-    else:
-        print(f"❌ Player {current_player} is not an AI.")
+            print(f"❌ No valid moves for Player {current_player}. Skipping turn.")
 
+        # Move to the next player
+        next_player = (current_player % 4) + 1
+        while not players[next_player].find_all_valid_moves(board):
+            next_player = (next_player % 4) + 1
+            if next_player == current_player:
+                # All players have no valid moves, end the game
+                scores = board.get_score()
+                sorted_scores = sorted(scores.items(), key=lambda x: x[1], reverse=True)
+                rankings = [{"player_id": player_id, "score": score} for player_id, score in sorted_scores]
+                return jsonify({
+                    "success": True,
+                    "game_over": True,
+                    "rankings": rankings
+                })
+
+        board.current_player = next_player
+        return jsonify({
+            "success": True,
+            "game_over": False,
+            "board": board.grid.tolist(),
+            "next_player": next_player,
+            "pieces": [{"name": piece.name, "shape": piece.shape.tolist()} for piece in players[next_player].pieces]
+        })
+
+    print(f"❌ Player {current_player} is not an AI.")
     return jsonify({"success": False, "error": "No valid moves or invalid player type."}), 400
 
 if __name__ == "__main__":

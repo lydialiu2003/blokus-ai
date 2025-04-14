@@ -407,6 +407,12 @@ const endTurn = async () => {
         const data = await response.json();
         console.log("✅ Turn ended:", data);
 
+        if (data.game_over) {
+            console.log("🎉 Game over! Displaying final rankings...");
+            displayFinalRankings(data.rankings);
+            return;
+        }
+
         currentPlayer = data.next_player;
         currentTurnDisplay.textContent = `Current Turn: Player ${currentPlayer}`;
 
@@ -503,6 +509,12 @@ const processAIMove = async () => {
         const data = await response.json();
         console.log("✅ AI move processed:", data);
 
+        if (data.game_over) {
+            console.log("🎉 Game over! Displaying final rankings...");
+            displayFinalRankings(data.rankings);
+            return;
+        }
+
         // Update the board state after the AI move
         await updateBoardState();
     } catch (error) {
@@ -513,3 +525,71 @@ const processAIMove = async () => {
         loadingScreen.classList.add("hidden");
     }
 };
+
+/**
+ * Display final rankings when the game ends.
+ */
+const displayFinalRankings = (rankings) => {
+    const rankingsContainer = document.getElementById("final-rankings");
+    const rankingsList = document.getElementById("rankings-list");
+
+    rankingsList.innerHTML = ""; // Clear previous rankings
+
+    rankings.forEach((player) => {
+        const listItem = document.createElement("li");
+        listItem.innerHTML = `<span class="player-label">Player ${player.player_id}</span> - <span class="player-score">${player.score}</span>`;
+        rankingsList.appendChild(listItem);
+    });
+
+    rankingsContainer.classList.remove("hidden");
+};
+
+document.addEventListener("DOMContentLoaded", () => {
+    const playerSelectionPopup = document.getElementById("player-selection-popup");
+    const overlay = document.getElementById("overlay");
+
+    // Show the popup and overlay
+    const showPopup = () => {
+        playerSelectionPopup.classList.remove("hidden");
+        overlay.classList.add("active");
+    };
+
+    // Hide the popup and overlay
+    const hidePopup = () => {
+        playerSelectionPopup.classList.add("hidden");
+        overlay.classList.remove("active");
+    };
+
+    // Show the popup on page load
+    showPopup();
+
+    const playerSelectionForm = document.getElementById("player-selection-form");
+    playerSelectionForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        const playerTypes = [
+            document.getElementById("player1").value,
+            document.getElementById("player2").value,
+            document.getElementById("player3").value,
+            document.getElementById("player4").value,
+        ];
+
+        console.log("🔍 Selected player types:", playerTypes);
+
+        try {
+            const response = await fetch(`${API_BASE_URL}/initialize_players`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ player_types: playerTypes }),
+            });
+
+            if (!response.ok) throw new Error("Failed to initialize players");
+
+            console.log("✅ Players initialized successfully.");
+            hidePopup(); // Hide the popup and overlay
+            initializeBoard(); // Initialize the board
+        } catch (error) {
+            console.error("❌ Error initializing players:", error);
+        }
+    });
+});
