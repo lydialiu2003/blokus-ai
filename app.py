@@ -6,6 +6,10 @@ from backend.piece import pieces, Piece
 from backend.player import Player
 from backend.move_validator import MoveValidator
 
+from backend.algorithms.greedy import GreedyAI
+from backend.algorithms.minimax import MinimaxAI
+from backend.algorithms.monte_carlo import MonteCarloAI
+
 app = Flask(__name__)
 CORS(app)
 
@@ -109,6 +113,59 @@ def end_turn():
         "board": board.grid.tolist(),
         "pieces": [{"name": piece.name, "shape": piece.shape.tolist()} for piece in players[next_player].pieces]
     })
+
+@app.route('/initialize_players', methods=['POST'])
+def initialize_players():
+    """Initialize player types (human or AI)."""
+    data = request.json
+    player_types = data.get("player_types")  # Example: ["greedy", "human", "human", "human"]
+
+    print("🔍 Initializing players with types:", player_types)
+
+    global players
+    players = {}
+    for i, player_type in enumerate(player_types, start=1):
+        if player_type == "human":
+            players[i] = Player(i, list(pieces.values()))
+        elif player_type == "greedy":
+            players[i] = GreedyAI(i, list(pieces.values()))
+        elif player_type == "minimax":
+            players[i] = MinimaxAI(i, list(pieces.values()))
+        elif player_type == "monte_carlo":
+            players[i] = MonteCarloAI(i, list(pieces.values()))
+        print(f"✅ Player {i} initialized as {player_type}")
+    return jsonify({"success": True})
+
+@app.route('/process_ai_move', methods=['POST'])
+def process_ai_move():
+    """Process AI move and return the updated board."""
+    current_player = board.current_player
+    player = players[current_player]
+
+    print(f"🔍 Processing move for Player {current_player} ({type(player).__name__})")
+
+    # Check if the current player is an AI
+    if isinstance(player, (GreedyAI, MinimaxAI, MonteCarloAI)):
+        move = player.choose_move(board)
+        if move:
+            original_piece, piece, x, y = move
+            print(f"✅ AI chose move: {piece.name} at ({x}, {y})")
+            board.place_piece(piece, x, y, player)
+            players[current_player].remove_piece(original_piece)
+            next_player = (current_player % 4) + 1
+            board.current_player = next_player
+            return jsonify({
+                "success": True,
+                "board": board.grid.tolist(),
+                "next_player": next_player,
+                "pieces": [{"name": piece.name, "shape": piece.shape.tolist()} for piece in players[next_player].pieces]
+            })
+        else:
+            print("❌ No valid moves for AI.")
+    else:
+        print(f"❌ Player {current_player} is not an AI.")
+
+    return jsonify({"success": False, "error": "No valid moves or invalid player type."}), 400
 
 if __name__ == "__main__":
     app.run(debug=True, host="127.0.0.1", port=5000)

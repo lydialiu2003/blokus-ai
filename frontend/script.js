@@ -90,6 +90,13 @@ const updateBoardState = async () => {
         currentPlayer = data.current_player;
         currentTurnDisplay.textContent = `Current Turn: Player ${currentPlayer}`;
         await renderPieces(); // ✅ Load pieces AFTER board is loaded
+
+        // Automatically trigger AI move if the current player is an AI
+        const currentPlayerType = document.getElementById(`player${currentPlayer}`).value;
+        if (currentPlayerType !== "human") {
+            console.log("🔄 Triggering AI move...");
+            await processAIMove();
+        }
     } catch (error) {
         console.error("❌ Error fetching board state:", error);
     }
@@ -150,8 +157,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     initializeBoard();
 });
-
-
 
 /**
  * Create a DOM element for a game piece.
@@ -402,20 +407,23 @@ const endTurn = async () => {
         const data = await response.json();
         console.log("✅ Turn ended:", data);
 
-        // Update the current player
         currentPlayer = data.next_player;
         currentTurnDisplay.textContent = `Current Turn: Player ${currentPlayer}`;
 
         await updateBoardState();
         await renderPieces();
 
-        // ✅ Automatically skip players if they have 0 valid moves
+        // Hide loading screen if it was shown
+        loadingScreen.classList.add("hidden");
+
+        // Automatically skip players with no valid moves
         if (data.valid_moves === 0) {
             console.log(`🚫 Player ${currentPlayer} has 0 valid moves! Skipping turn...`);
             setTimeout(endTurn, 1000); // Auto-skip after 1 second
         }
     } catch (error) {
         console.error("❌ Error ending turn:", error);
+        loadingScreen.classList.add("hidden"); // Ensure loading screen is hidden on error
     }
 };
 
@@ -435,3 +443,73 @@ document.addEventListener("DOMContentLoaded", () => {
 
     initializeBoard();
 });
+
+const playerSelectionForm = document.getElementById("player-selection-form");
+const playerSelectionPopup = document.getElementById("player-selection-popup");
+const loadingScreen = document.getElementById("loading-screen");
+
+playerSelectionForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const playerTypes = [
+        document.getElementById("player1").value,
+        document.getElementById("player2").value,
+        document.getElementById("player3").value,
+        document.getElementById("player4").value,
+    ];
+
+    console.log("🔍 Selected player types:", playerTypes);
+
+    try {
+        const response = await fetch(`${API_BASE_URL}/initialize_players`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ player_types: playerTypes }),
+        });
+
+        if (!response.ok) throw new Error("Failed to initialize players");
+
+        console.log("✅ Players initialized successfully.");
+        playerSelectionPopup.classList.add("hidden"); // Hide the popup
+        initializeBoard(); // Initialize the board
+    } catch (error) {
+        console.error("❌ Error initializing players:", error);
+    }
+});
+
+const processAIMove = async () => {
+    const currentPlayerType = document.getElementById(`player${currentPlayer}`).value;
+
+    console.log(`🔍 Current player type: ${currentPlayerType}`);
+
+    // Skip AI processing for human players
+    if (currentPlayerType === "human") {
+        console.log("Skipping AI processing for human player.");
+        loadingScreen.classList.add("hidden"); // Ensure the loading screen is hidden
+        return;
+    }
+
+    // Show the loading screen for AI players
+    console.log("🟢 Showing loading screen...");
+    loadingScreen.classList.remove("hidden");
+
+    try {
+        const response = await fetch(`${API_BASE_URL}/process_ai_move`, {
+            method: "POST",
+        });
+
+        if (!response.ok) throw new Error("Failed to process AI move");
+
+        const data = await response.json();
+        console.log("✅ AI move processed:", data);
+
+        // Update the board state after the AI move
+        await updateBoardState();
+    } catch (error) {
+        console.error("❌ Error processing AI move:", error);
+    } finally {
+        // Hide the loading screen after processing
+        console.log("🔴 Hiding loading screen...");
+        loadingScreen.classList.add("hidden");
+    }
+};
