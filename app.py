@@ -191,5 +191,15 @@ def process_ai_move():
     print(f"❌ Player {current_player} is not an AI.")
     return jsonify({"success": False, "error": "No valid moves or invalid player type."}), 400
 
+@app.route('/restart_game', methods=['POST'])
+def restart_game():
+    """Restart the game by resetting the board and players."""
+    global players, board
+    players = {i: Player(i, list(pieces.values())) for i in range(1, 5)}
+    board = Board(size=20)
+    board.current_player = 1
+    print("🔄 Game has been restarted.")
+    return jsonify({"success": True})
+
 if __name__ == "__main__":
     app.run(debug=True, host="127.0.0.1", port=5000)

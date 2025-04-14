@@ -256,3 +256,43 @@ body {
   font-size: 1.3em;
   color: #555;
 }
+
+/* Restart button styling */
+.restart-button {
+  font-size: 1.2em;
+  padding: 10px 20px;
+  background-color: #28a745;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  margin-left: 10px; /* Add spacing between buttons */
+  transition: background-color 0.3s ease;
+}
+
+.restart-button:hover {
+  background-color: #218838;
+}
+
+#restart-container {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+/* End Turn button styling */
+#end-turn-button {
+  font-size: 1.2em;
+  padding: 10px 20px;
+  background-color: #007bff; /* Blue background */
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  margin-right: 10px; /* Add spacing between buttons */
+  transition: background-color 0.3s ease;
+}
+
+#end-turn-button:hover {
+  background-color: #0056b3; /* Darker blue on hover */
+}

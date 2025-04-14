@@ -542,6 +542,7 @@ const displayFinalRankings = (rankings) => {
     });
 
     rankingsContainer.classList.remove("hidden");
+    showRestartButton(); // Show the restart button when rankings are displayed
 };
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -592,4 +593,86 @@ document.addEventListener("DOMContentLoaded", () => {
             console.error("❌ Error initializing players:", error);
         }
     });
+});
+
+document.addEventListener("DOMContentLoaded", () => {
+    const restartButton = document.getElementById("restart-button");
+    const restartContainer = document.getElementById("restart-container");
+    const playerSelectionPopup = document.getElementById("player-selection-popup");
+    const overlay = document.getElementById("overlay");
+
+    // Show the restart button when the game ends
+    const showRestartButton = () => {
+        restartContainer.classList.remove("hidden");
+    };
+
+    // Restart the game
+    const restartGame = async () => {
+        console.log("🔄 Restarting the game...");
+        try {
+            const response = await fetch(`${API_BASE_URL}/restart_game`, {
+                method: "POST",
+            });
+
+            if (!response.ok) throw new Error("Failed to restart the game");
+
+            console.log("✅ Game restarted successfully.");
+            restartContainer.classList.add("hidden"); // Hide the restart button
+            playerSelectionPopup.classList.remove("hidden"); // Show the player selection popup
+            overlay.classList.add("active"); // Show the overlay
+        } catch (error) {
+            console.error("❌ Error restarting the game:", error);
+        }
+    };
+
+    // Add event listener to the restart button
+    if (restartButton) {
+        restartButton.addEventListener("click", restartGame);
+    }
+
+    // Modify the displayFinalRankings function to show the restart button
+    const displayFinalRankings = (rankings) => {
+        const rankingsContainer = document.getElementById("final-rankings");
+        const rankingsList = document.getElementById("rankings-list");
+
+        rankingsList.innerHTML = ""; // Clear previous rankings
+
+        rankings.forEach((player) => {
+            const listItem = document.createElement("li");
+            listItem.innerHTML = `<span class="player-label">Player ${player.player_id}</span> - <span class="player-score">${player.score}</span>`;
+            rankingsList.appendChild(listItem);
+        });
+
+        rankingsContainer.classList.remove("hidden");
+        showRestartButton(); // Show the restart button when rankings are displayed
+    };
+});
+
+document.addEventListener("DOMContentLoaded", () => {
+    const restartGameButton = document.getElementById("restart-game-button");
+    const playerSelectionPopup = document.getElementById("player-selection-popup");
+    const overlay = document.getElementById("overlay");
+
+    // Restart the game
+    const restartGame = async () => {
+        console.log("🔄 Restarting the game...");
+        try {
+            const response = await fetch(`${API_BASE_URL}/restart_game`, {
+                method: "POST",
+            });
+
+            if (!response.ok) throw new Error("Failed to restart the game");
+
+            console.log("✅ Game restarted successfully.");
+            playerSelectionPopup.classList.remove("hidden"); // Show the player selection popup
+            overlay.classList.add("active"); // Show the overlay
+        } catch (error) {
+            console.error("❌ Error restarting the game:", error);
+        }
+    };
+
+    // Add event listener to the Restart Game button
+    if (restartGameButton) {
+        restartGameButton.addEventListener("click", restartGame);
+    }
 });
