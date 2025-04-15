@@ -152,7 +152,7 @@ class MonteCarloAI(Player):
             simulation_board = deepcopy(board)
             current_player = self
             moves_count = 0
-            max_moves = 20  # Increased depth
+            max_moves = 3  # Increased depth
             total_utility = 0
 
             while moves_count < max_moves:
@@ -166,7 +166,7 @@ class MonteCarloAI(Player):
                     for move in valid_moves
                 ]
                 moves_with_utility.sort(key=lambda x: x[1], reverse=True)
-                top_moves = moves_with_utility[:5]  # Consider only top 5 moves
+                top_moves = moves_with_utility[:10]  # Consider only top 5 moves
                 
                 # Choose randomly from top moves
                 move, utility = random.choice(top_moves)
