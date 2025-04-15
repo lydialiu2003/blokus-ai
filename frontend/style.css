@@ -296,3 +296,23 @@ body {
 #end-turn-button:hover {
   background-color: #0056b3; /* Darker blue on hover */
 }
+
+#new-game-button {
+  font-size: 1.2em;
+  padding: 10px 20px;
+  background-color: #28a745; /* Green background */
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  margin-top: 20px; /* Add spacing above the button */
+  transition: background-color 0.3s ease;
+}
+
+#new-game-button:hover {
+  background-color: #218838; /* Darker green on hover */
+}
+
+.hidden {
+  display: none !important;
+}

@@ -419,9 +419,6 @@ const endTurn = async () => {
         await updateBoardState();
         await renderPieces();
 
-        // Hide loading screen if it was shown
-        loadingScreen.classList.add("hidden");
-
         // Automatically skip players with no valid moves
         if (data.valid_moves === 0) {
             console.log(`🚫 Player ${currentPlayer} has 0 valid moves! Skipping turn...`);
@@ -526,23 +523,84 @@ const processAIMove = async () => {
     }
 };
 
+// Removed duplicate declaration of displayFinalRankings
+
+/**
+ * Restart the game and reset the UI.
+ */
+const restartGame = async () => {
+    console.log("🔄 Restarting the game...");
+    try {
+        const response = await fetch(`${API_BASE_URL}/restart_game`, {
+            method: "POST",
+        });
+
+        if (!response.ok) throw new Error("Failed to restart the game");
+
+        console.log("✅ Game restarted successfully.");
+        const data = await response.json();
+
+        // Reset the board and UI
+        renderBoard(data.board);
+
+        // Hide the final rankings window
+        const rankingsContainer = document.getElementById("final-rankings");
+        if (rankingsContainer) {
+            rankingsContainer.classList.add("hidden"); // Hide the rankings container
+            rankingsContainer.style.display = "none"; // Fallback in case 'hidden' class doesn't work
+            console.log("✅ Final rankings window hidden.");
+        }
+
+        // Clear the rankings list
+        const rankingsList = document.getElementById("rankings-list");
+        if (rankingsList) {
+            rankingsList.innerHTML = ""; // Clear the rankings list
+            console.log("✅ Rankings list cleared.");
+        }
+
+        // Show the Restart Game button at the top
+        const restartGameButton = document.getElementById("restart-game-button");
+        if (restartGameButton) {
+            restartGameButton.classList.remove("hidden");
+            console.log("✅ Restart Game button shown.");
+        }
+
+        // Show the player selection popup
+        playerSelectionPopup.classList.remove("hidden");
+        overlay.classList.add("active");
+    } catch (error) {
+        console.error("❌ Error restarting the game:", error);
+    }
+};
+
 /**
  * Display final rankings when the game ends.
  */
 const displayFinalRankings = (rankings) => {
     const rankingsContainer = document.getElementById("final-rankings");
     const rankingsList = document.getElementById("rankings-list");
+    const restartGameButton = document.getElementById("restart-game-button");
 
-    rankingsList.innerHTML = ""; // Clear previous rankings
+    // Clear previous rankings
+    rankingsList.innerHTML = "";
 
+    // Populate rankings
     rankings.forEach((player) => {
         const listItem = document.createElement("li");
         listItem.innerHTML = `<span class="player-label">Player ${player.player_id}</span> - <span class="player-score">${player.score}</span>`;
         rankingsList.appendChild(listItem);
     });
 
+    // Show the rankings container
     rankingsContainer.classList.remove("hidden");
-    showRestartButton(); // Show the restart button when rankings are displayed
+    rankingsContainer.style.display = "block"; // Ensure it's visible
+    console.log("✅ Final rankings displayed.");
+
+    // Hide the Restart Game button at the top
+    if (restartGameButton) {
+        restartGameButton.classList.add("hidden");
+        console.log("✅ Restart Game button hidden.");
+    }
 };
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -607,24 +665,6 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 
     // Restart the game
-    const restartGame = async () => {
-        console.log("🔄 Restarting the game...");
-        try {
-            const response = await fetch(`${API_BASE_URL}/restart_game`, {
-                method: "POST",
-            });
-
-            if (!response.ok) throw new Error("Failed to restart the game");
-
-            console.log("✅ Game restarted successfully.");
-            restartContainer.classList.add("hidden"); // Hide the restart button
-            playerSelectionPopup.classList.remove("hidden"); // Show the player selection popup
-            overlay.classList.add("active"); // Show the overlay
-        } catch (error) {
-            console.error("❌ Error restarting the game:", error);
-        }
-    };
-
     // Add event listener to the restart button
     if (restartButton) {
         restartButton.addEventListener("click", restartGame);
@@ -674,5 +714,28 @@ document.addEventListener("DOMContentLoaded", () => {
     // Add event listener to the Restart Game button
     if (restartGameButton) {
         restartGameButton.addEventListener("click", restartGame);
+    }
+});
+
+document.addEventListener("DOMContentLoaded", () => {
+    const restartButton = document.getElementById("restart-button");
+    if (restartButton) {
+        restartButton.addEventListener("click", restartGame);
+        console.log("✅ Restart button event listener added.");
+    } else {
+        console.error("❌ Restart button not found in the DOM!");
+    }
+});
+
+// Removed duplicate declaration of restartGame to avoid redeclaration errors
+
+// Add event listener for the "New Game" button
+document.addEventListener("DOMContentLoaded", () => {
+    const newGameButton = document.getElementById("new-game-button");
+    if (newGameButton) {
+        newGameButton.addEventListener("click", restartGame);
+        console.log("✅ New Game button event listener added.");
+    } else {
+        console.error("❌ New Game button not found in the DOM!");
     }
 });

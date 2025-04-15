@@ -60,4 +60,5 @@ class Player:
                     for y in range(board.size):
                         if board.is_valid(orientation_piece, x, y, self):
                             valid_moves.append((piece, orientation_piece, x, y))
+        print(f"🔍 Player {self.player_id} valid moves: {len(valid_moves)}")
         return valid_moves

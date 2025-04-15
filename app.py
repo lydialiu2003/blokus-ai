@@ -102,9 +102,11 @@ def end_turn():
 
     # Skip players with no valid moves
     while not players[next_player].find_all_valid_moves(board):
+        print(f"🚫 Player {next_player} has no valid moves. Skipping turn...")
         next_player = (next_player % 4) + 1
         if next_player == current_player:
             # All players have no valid moves, end the game
+            print("🏁 All players have no valid moves. Ending the game...")
             scores = board.get_score()
             sorted_scores = sorted(scores.items(), key=lambda x: x[1], reverse=True)
             rankings = [{"player_id": player_id, "score": score} for player_id, score in sorted_scores]
@@ -115,6 +117,7 @@ def end_turn():
             })
 
     board.current_player = next_player
+    print(f"➡️ Next turn: Player {next_player}")
     return jsonify({
         "success": True,
         "game_over": False,
@@ -199,7 +202,7 @@ def restart_game():
     board = Board(size=20)
     board.current_player = 1
     print("🔄 Game has been restarted.")
-    return jsonify({"success": True})
+    return jsonify({"success": True, "board": board.grid.tolist()})
 
 if __name__ == "__main__":
     app.run(debug=True, host="127.0.0.1", port=5000)
